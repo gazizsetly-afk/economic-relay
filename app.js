@@ -11,7 +11,7 @@ const S = {
   factQ: ['вопросов в тесте', 'тест сұрағы'], factCases: ['командных кейсов', 'командалық кейс'], factPts: ['баллов за кейс', 'кейске балл'],
   studentCard: ['Я студент', 'Мен студентпін'], studentCardText: ['Введите 6-значный код класса, который дал преподаватель, или отсканируйте QR-код.', 'Мұғалім берген 6 таңбалы сынып кодын енгізіңіз немесе QR-кодты сканерлеңіз.'],
   classCode: ['Код класса', 'Сынып коды'], continue: ['Продолжить', 'Жалғастыру'],
-  teacherCard: ['Я преподаватель', 'Мен мұғаліммін'], teacherCardText: ['Личный кабинет: тест из 20 вопросов, ваши команды, коды и оценки. Заходите в любое время.', 'Жеке кабинет: 20 сұрақтық тест, командаларыңыз, кодтар мен бағалар. Кез келген уақытта кіріңіз.'],
+  teacherCard: ['Я преподаватель', 'Мен мұғаліммін'], teacherCardText: ['Личный кабинет: тест, ваши команды, коды и оценки. Логин и пароль выдаёт директор.', 'Жеке кабинет: тест, командаларыңыз, кодтар мен бағалар. Логин мен құпиясөзді директор береді.'], noSelfReg: ['Нет логина? Его выдаёт директор — обратитесь к нему.', 'Логин жоқ па? Оны директор береді — директорға хабарласыңыз.'],
   signIn: ['Войти', 'Кіру'], register: ['Регистрация', 'Тіркелу'], createAccount: ['Создать аккаунт', 'Аккаунт ашу'],
   fullName: ['ФИО', 'Аты-жөні'], login: ['Логин', 'Логин'], loginHint: ['латиница, цифры, . _ - @ (3–40 символов)', 'латын әріптері, сандар, . _ - @ (3–40 таңба)'],
   password: ['Пароль', 'Құпиясөз'], passwordHint: ['не короче 6 символов', 'кемі 6 таңба'], regCode: ['Код регистрации (от руководителя)', 'Тіркелу коды (басшыдан)'],
@@ -78,14 +78,14 @@ const S = {
   supTitle: ['Кабинет директора', 'Директор кабинеті'], supSub: ['Все преподаватели, их тесты, классы и результаты студентов.', 'Барлық мұғалімдер, олардың тесті, сыныптары және студент нәтижелері.'],
   tabTeachers: ['Преподаватели', 'Мұғалімдер'], tabSettings: ['Настройки', 'Баптаулар'],
   sTeachers: ['преподавателей', 'мұғалім'], sPassed: ['прошли тест', 'тест тапсырды'], sAvg: ['средний балл теста', 'тесттің орташа балы'], sOpen: ['классов открыто', 'сынып ашық'], sStudents: ['студентов сейчас', 'қазір студент'],
-  search: ['Поиск по ФИО или логину', 'Аты-жөні не логин бойынша іздеу'], noTeachers: ['Преподаватели ещё не зарегистрировались. Отправьте им ссылку на сайт.', 'Мұғалімдер әлі тіркелмеген. Оларға сайт сілтемесін жіберіңіз.'],
+  search: ['Поиск по ФИО или логину', 'Аты-жөні не логин бойынша іздеу'], noTeachers: ['Преподавателей пока нет. Создайте им логины кнопкой «Создать аккаунт преподавателю».', 'Әзірге мұғалім жоқ. «Мұғалімге аккаунт ашу» батырмасымен логин жасаңыз.'],
   colTeacher: ['Преподаватель', 'Мұғалім'], colTest: ['Тест', 'Тест'], colClass: ['Класс', 'Сынып'], colTeams: ['Команды', 'Командалар'], colLast: ['Последний вход', 'Соңғы кіру'],
   notTaken: ['не пройден', 'тапсырылмаған'], blocked: ['заблокирован', 'бұғатталған'], details: ['Подробнее', 'Толығырақ'],
   resetPassword: ['Сбросить пароль', 'Құпиясөзді қалпына келтіру'], resetPrompt: ['Новый пароль для преподавателя (не короче 6 символов):', 'Мұғалімге жаңа құпиясөз (кемі 6 таңба):'], block: ['Заблокировать', 'Бұғаттау'], unblock: ['Разблокировать', 'Бұғаттан шығару'],
   deleteTeacher: ['Удалить аккаунт', 'Аккаунтты өшіру'], deleteConfirm: ['Удалить аккаунт и все его данные? Это нельзя отменить.', 'Аккаунтты және оның барлық деректерін өшіру керек пе? Қайтару мүмкін емес.'],
   attempts: ['Попытки теста', 'Тест әрекеттері'], registered: ['Зарегистрирован', 'Тіркелген'],
   regTitle: ['Регистрация преподавателей', 'Мұғалімдерді тіркеу'], regHelp: ['Если задать код, зарегистрироваться смогут только те, кому вы его сообщили. Пусто — регистрация открыта для всех.', 'Код қойсаңыз, тек кодты білетіндер тіркеле алады. Бос болса — тіркелу барлығына ашық.'],
-  createTitle: ['Создать аккаунт преподавателю', 'Мұғалімге аккаунт ашу'], createHelp: ['Можно завести аккаунт самому и передать логин и пароль преподавателю.', 'Аккаунтты өзіңіз ашып, логин мен құпиясөзді мұғалімге беруге болады.'],
+  createTitle: ['Создать аккаунт преподавателю', 'Мұғалімге аккаунт ашу'], createHelp: ['Преподаватели не могут зарегистрироваться сами. Создайте логин и пароль и передайте их преподавателю лично.', 'Мұғалімдер өздері тіркеле алмайды. Логин мен құпиясөз жасап, мұғалімге жеке беріңіз.'], teacherCreated: ['Аккаунт создан. Передайте преподавателю логин и пароль.', 'Аккаунт ашылды. Логин мен құпиясөзді мұғалімге беріңіз.'],
   keysTitle: ['Образцы ответов жюри', 'Қазылардың үлгі жауаптары'], keysHelp: ['Загрузите приватный JSON-файл с ответами. Его увидят только преподаватели в разделе оценок. Не выкладывайте файл в GitHub.', 'Жауаптары бар жеке JSON файлды жүктеңіз. Оны тек мұғалімдер бағалау бөлімінде көреді. Файлды GitHub-қа салмаңыз.'],
   keysLoaded: ['Загружено для кейсов', 'Жүктелген кейстер'], importFile: ['Загрузить файл', 'Файлды жүктеу'],
   exportTitle: ['Отчёт по преподавателям', 'Мұғалімдер бойынша есеп'], legacyTitle: ['Данные прошлой версии сайта', 'Сайттың алдыңғы нұсқасының деректері'], legacyHelp: ['Результаты старого общего кабинета сохранены. Можно скачать резервную копию.', 'Ескі ортақ кабинеттің нәтижелері сақталған. Резервтік көшірмені жүктеуге болады.'], legacyDownload: ['Скачать резервную копию', 'Резервтік көшірмені жүктеу'],
@@ -193,7 +193,7 @@ function landingUI() {
     </section>
     <section class="card role reveal">
       <div class="role-icon violet">👩‍🏫</div><h2>${L('teacherCard')}</h2><p class="muted">${L('teacherCardText')}</p>
-      <div class="btn-row"><button class="btn primary" onclick="openTeacherDialog('login')">${L('signIn')}</button><button class="btn ghost" onclick="openTeacherDialog('register')">${L('register')}</button></div>
+      <button class="btn primary" onclick="openTeacherDialog()">${L('signIn')} →</button>
     </section>
   </div>`;
 }
@@ -204,28 +204,19 @@ async function goClass(e) {
 }
 function dialog(html, size = '') { $('dialog').className = 'dialog ' + size; $('dialogBody').innerHTML = `<button class="dialog-x" type="button" onclick="closeDialog()" aria-label="${L('close')}">×</button>` + html; if (!$('dialog').open) $('dialog').showModal(); }
 function closeDialog() { $('dialog').close(); }
-function openTeacherDialog(mode) {
-  loginMode = mode;
-  const reg = mode === 'register';
-  dialog(`<div class="dialog-icon">👩‍🏫</div><h2>${reg ? L('register') : L('teacherLogin')}</h2>
+function openTeacherDialog() {
+  dialog(`<div class="dialog-icon">👩‍🏫</div><h2>${L('teacherLogin')}</h2><p class="muted small">${L('noSelfReg')}</p>
   <form onsubmit="teacherAuth(event)">
-    ${reg ? field(L('fullName'), 'tName', 'required minlength="3" maxlength="120" autocomplete="name"') : ''}
-    ${field(L('login'), 'tLogin', 'required minlength="3" maxlength="40" autocomplete="username" autocapitalize="none" spellcheck="false"', reg ? L('loginHint') : '')}
-    ${field(L('password'), 'tPass', `type="password" required minlength="${reg ? 6 : 1}" autocomplete="${reg ? 'new-password' : 'current-password'}"`, reg ? L('passwordHint') : '')}
-    ${reg && session?.regCodeRequired ? field(L('regCode'), 'tReg', 'required autocomplete="off"') : ''}
-    <button class="btn primary full" type="submit">${reg ? L('createAccount') : L('signIn')} →</button>
-  </form>
-  <button class="link-btn center" type="button" onclick="openTeacherDialog('${reg ? 'login' : 'register'}')">${reg ? L('haveAccount') : L('noAccount')}</button>`);
-  setTimeout(() => $(reg ? 'tName' : 'tLogin')?.focus(), 50);
+    ${field(L('login'), 'tLogin', 'required minlength="3" maxlength="40" autocomplete="username" autocapitalize="none" spellcheck="false"')}
+    ${field(L('password'), 'tPass', 'type="password" required autocomplete="current-password"')}
+    <button class="btn primary full" type="submit">${L('signIn')} →</button>
+  </form>`);
+  setTimeout(() => $('tLogin')?.focus(), 50);
 }
 async function teacherAuth(e) {
   e.preventDefault();
-  const body = { login: $('tLogin').value.trim(), password: $('tPass').value };
-  try {
-    if (loginMode === 'register') await api('/teacher/register', 'POST', { ...body, name: $('tName').value.trim(), regCode: $('tReg')?.value.trim() || '' });
-    else await api('/teacher/login', 'POST', body);
-    closeDialog(); tab = 'home'; setUrlCode(''); await load();
-  } catch (ex) { toast(errText(ex.message)); }
+  try { await api('/teacher/login', 'POST', { login: $('tLogin').value.trim(), password: $('tPass').value }); closeDialog(); tab = 'home'; setUrlCode(''); await load(); }
+  catch (ex) { toast(errText(ex.message)); }
 }
 function directorLoginUI() {
   return `<section class="card narrow center-block reveal"><div class="dialog-icon gold">🏛️</div><h2>${L('supervisorLogin')}</h2><p class="muted">${L('supervisorText')}</p>
@@ -478,6 +469,7 @@ function supTeachersUI() {
   const list = data.teachers, passed = list.filter(t => t.lastAttempt), avg = passed.length ? Math.round(passed.reduce((a, t) => a + t.lastAttempt.score / t.lastAttempt.total * 100, 0) / passed.length) + '%' : '—';
   const q = search.trim().toLowerCase(), shown = q ? list.filter(t => t.name.toLowerCase().includes(q) || t.login.includes(q)) : list;
   return `<div class="tiles reveal"><div class="tile"><b>${list.length}</b><span>${L('sTeachers')}</span></div><div class="tile"><b>${passed.length}</b><span>${L('sPassed')}</span></div><div class="tile"><b>${avg}</b><span>${L('sAvg')}</span></div><div class="tile"><b>${list.filter(t => t.phase === 'open').length}</b><span>${L('sOpen')}</span></div><div class="tile"><b>${list.reduce((n, t) => n + t.students, 0)}</b><span>${L('sStudents')}</span></div></div>
+  <section class="card reveal add-teacher"><details data-k="addTeacher"${list.length ? '' : ' open'}><summary class="btn primary">➕ ${L('createTitle')}</summary><p class="muted mt">${L('createHelp')}</p><form class="add-grid" onsubmit="createTeacher(event)">${field(L('fullName'), 'cName', 'required minlength="3" maxlength="120"')}${field(L('login'), 'cLogin', 'required minlength="3" maxlength="40" autocapitalize="none" spellcheck="false"', L('loginHint'))}${field(L('password'), 'cPass', 'required minlength="6" autocomplete="new-password"', L('passwordHint'))}<button class="btn green" type="submit">✓ ${L('createAccount')}</button></form></details></section>
   <section class="card reveal"><div class="section-head"><input class="input search" id="searchBox" placeholder="🔎 ${L('search')}" value="${esc(search)}" oninput="search=this.value;filterTeachers()"><a class="btn ghost small" href="/api/supervisor/csv" download>↓ ${L('downloadCsv')}</a></div>
   ${list.length ? `<div class="table-wrap"><table class="table"><thead><tr><th>${L('colTeacher')}</th><th>${L('colTest')}</th><th>${L('colClass')}</th><th>${L('colTeams')}</th><th>${L('colLast')}</th><th></th></tr></thead><tbody id="teacherRows">${teacherRows(shown)}</tbody></table></div>` : `<p class="muted">${L('noTeachers')}</p>`}</section>`;
 }
@@ -515,8 +507,6 @@ async function supAct(action) {
 function supSettingsUI() {
   const d = data;
   return `<div class="split">
-    ${card('🔐 ' + L('regTitle'), `<p class="muted">${L('regHelp')}</p><div class="row-form">${field(L('regCode'), 'regCodeIn', `value="${esc(d.regCode)}" maxlength="60" autocomplete="off"`)}<button class="btn primary" onclick="act('/supervisor/settings',{regCode:$('regCodeIn').value.trim()})">${L('save')}</button></div>`)}
-    ${card('➕ ' + L('createTitle'), `<p class="muted">${L('createHelp')}</p><form onsubmit="createTeacher(event)">${field(L('fullName'), 'cName', 'required minlength="3" maxlength="120"')}${field(L('login'), 'cLogin', 'required minlength="3" maxlength="40" autocapitalize="none" spellcheck="false"', L('loginHint'))}${field(L('password'), 'cPass', 'required minlength="6" autocomplete="new-password"', L('passwordHint'))}<button class="btn primary" type="submit">${L('createAccount')}</button></form>`)}
     ${card('🗝 ' + L('keysTitle'), `<p class="muted">${L('keysHelp')}</p><p>${pill(L('keysLoaded') + ': ' + d.answerKeyCount + '/10', d.answerKeyCount ? 'green' : 'amber')}</p><label class="btn ghost small file-btn">📂 ${L('importFile')}<input type="file" accept="application/json,.json" onchange="importKeys(this)"></label>`)}
     ${card('📊 ' + L('exportTitle'), `<a class="btn ghost" href="/api/supervisor/csv" download>↓ ${L('downloadCsv')}</a>${d.hasLegacy ? `<h3 class="mt">${L('legacyTitle')}</h3><p class="muted">${L('legacyHelp')}</p><a class="btn ghost small" href="/api/supervisor/legacy-export" download>↓ ${L('legacyDownload')}</a>${d.legacyAttempts.length ? `<ul class="attempts">${d.legacyAttempts.map(a => `<li><b>${a.score}/${a.total}</b> ${esc(a.name)}<small>${fmtDate(a.finishedAt)}</small></li>`).join('')}</ul>` : ''}` : ''}`)}
   </div>`;
@@ -561,7 +551,7 @@ async function directorAct(action, login) {
   else if (!confirm(L('directorDelete'))) return;
   await act('/supervisor/directors', body);
 }
-async function createTeacher(e) { e.preventDefault(); const r = await act('/supervisor/create-teacher', { name: $('cName').value.trim(), login: $('cLogin').value.trim(), password: $('cPass').value }); if (r) e.target.reset(); }
+async function createTeacher(e) { e.preventDefault(); const r = await act('/supervisor/create-teacher', { name: $('cName').value.trim(), login: $('cLogin').value.trim(), password: $('cPass').value }, L('teacherCreated')); if (r) e.target.reset(); }
 async function importKeys(input) {
   const f = input.files[0]; if (!f) return;
   try { const json = JSON.parse(await f.text()); await act('/supervisor/answers', { answerKeys: json.answerKeys || json }); }

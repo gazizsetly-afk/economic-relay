@@ -27,6 +27,13 @@ async function launch(t, { legacy, env = {} } = {}) {
   return { call, base };
 }
 const correct = QUESTIONS.map(q => q.correct);
+// Only the director creates teacher accounts; then the teacher signs in.
+async function addTeacher(call, who, name, login, password) {
+  await call('boss', '/api/supervisor/login', 'POST', { login: 'admin', password: SUP });
+  const r = await call('boss', '/api/supervisor/create-teacher', 'POST', { name, login, password });
+  if (r.status !== 200) return r;
+  return call(who, '/api/teacher/login', 'POST', { login, password });
+}
 
 test('static files and background image are served', async t => {
   const { call } = await launch(t);
@@ -38,13 +45,15 @@ test('static files and background image are served', async t => {
 
 test('two teachers with their own accounts, classes, quiz and students; supervisor oversees them', async t => {
   const { call } = await launch(t);
-  // registration
-  assert.equal((await call('t1', '/api/teacher/register', 'POST', { name: 'Ай', login: 'aigul', password: 'secret1' })).status, 400);
-  assert.equal((await call('t1', '/api/teacher/register', 'POST', { name: 'Айгүл Серікова', login: 'Ай гүл', password: 'secret1' })).data.error, 'login_format');
-  assert.equal((await call('t1', '/api/teacher/register', 'POST', { name: 'Айгүл Серікова', login: 'aigul', password: '123' })).data.error, 'password_too_short');
-  assert.equal((await call('t1', '/api/teacher/register', 'POST', { name: 'Айгүл Серікова', login: 'Aigul', password: 'secret1' })).status, 200);
-  assert.equal((await call('t2', '/api/teacher/register', 'POST', { name: 'Иван Петров', login: 'aigul', password: 'secret2' })).data.error, 'login_taken');
-  assert.equal((await call('t2', '/api/teacher/register', 'POST', { name: 'Иван Петров', login: 'ivan', password: 'secret2' })).status, 200);
+  // no self-registration: only the director creates accounts
+  assert.equal((await call('t1', '/api/teacher/register', 'POST', { name: 'Айгүл Серікова', login: 'aigul', password: 'secret1' })).status, 404);
+  assert.equal((await call('t1', '/api/supervisor/create-teacher', 'POST', { name: 'Айгүл Серікова', login: 'aigul', password: 'secret1' })).status, 401);
+  assert.equal((await addTeacher(call, 't1', 'Ай', 'aigul', 'secret1')).status, 400);
+  assert.equal((await addTeacher(call, 't1', 'Айгүл Серікова', 'Ай гүл', 'secret1')).data.error, 'login_format');
+  assert.equal((await addTeacher(call, 't1', 'Айгүл Серікова', 'aigul', '123')).data.error, 'password_too_short');
+  assert.equal((await addTeacher(call, 't1', 'Айгүл Серікова', 'Aigul', 'secret1')).status, 200);
+  assert.equal((await addTeacher(call, 't2', 'Иван Петров', 'aigul', 'secret2')).data.error, 'login_taken');
+  assert.equal((await addTeacher(call, 't2', 'Иван Петров', 'ivan', 'secret2')).status, 200);
   assert.equal((await call('t1', '/api/session')).data.role, 'teacher');
 
   let a = (await call('t1', '/api/teacher')).data, b = (await call('t2', '/api/teacher')).data;
@@ -122,11 +131,8 @@ test('two teachers with their own accounts, classes, quiz and students; supervis
   assert.equal((await call('sup', '/api/supervisor/answers', 'POST', { answerKeys: { 1: {} } })).status, 400);
   assert.equal((await call('sup', '/api/supervisor/answers', 'POST', { answerKeys: keys })).status, 200);
   assert.equal((await call('t1', '/api/teacher')).data.answerKeys['3'].ru.length, 3);
-  // registration code, create teacher, reset, block, delete
-  assert.equal((await call('sup', '/api/supervisor/settings', 'POST', { regCode: 'EKTU2026' })).status, 200);
-  assert.equal((await call('new', '/api/session')).data.regCodeRequired, true);
-  assert.equal((await call('new', '/api/teacher/register', 'POST', { name: 'Жаңа мұғалім', login: 'jana', password: 'secret3' })).data.error, 'invalid_reg_code');
-  assert.equal((await call('new', '/api/teacher/register', 'POST', { name: 'Жаңа мұғалім', login: 'jana', password: 'secret3', regCode: 'EKTU2026' })).status, 200);
+  // create teacher, reset, block, delete
+  assert.equal((await addTeacher(call, 'new', 'Жаңа мұғалім', 'jana', 'secret3')).status, 200);
   assert.equal((await call('sup', '/api/supervisor/create-teacher', 'POST', { name: 'Марат Ахметов', login: 'marat', password: 'start123' })).status, 200);
   assert.equal((await call('m', '/api/teacher/login', 'POST', { login: 'marat', password: 'start123' })).status, 200);
   assert.equal((await call('sup', '/api/supervisor/teacher', 'POST', { id: b.id, action: 'reset', password: 'fresh-pass' })).status, 200);
@@ -163,7 +169,7 @@ test('earlier single-cabinet data is kept and its useful parts are migrated', as
 
 test('teacher edits a team case; only the director edits the teacher test; director accounts with login and password', async t => {
   const { call } = await launch(t);
-  assert.equal((await call('t', '/api/teacher/register', 'POST', { name: 'Айгүл Серікова', login: 'aigul', password: 'secret1' })).status, 200);
+  assert.equal((await addTeacher(call, 't', 'Айгүл Серікова', 'aigul', 'secret1')).status, 200);
   let me = (await call('t', '/api/teacher')).data;
   const custom = { ru: { title: 'Мой кейс', stages: [1, 2, 3].map(i => ({ heading: 'Этап ' + i, body: 'Текст ' + i })) }, kk: { title: 'Менің кейсім', stages: [1, 2, 3].map(i => ({ heading: i + '-кезең', body: 'Мәтін ' + i })) } };
   assert.equal((await call('t', '/api/teacher/case', 'POST', { teamId: 2, content: { ru: custom.ru } })).data.error, 'case_incomplete');

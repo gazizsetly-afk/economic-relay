@@ -315,7 +315,7 @@ async function handle(req, res) {
   // ----- session / auth -----
   if (method === 'GET' && p === '/api/session') {
     const tok = readToken(req), cfg = await store.get('config');
-    const base = { regCodeRequired: !!cfg.regCode };
+    const base = {};
     if (tok?.role === 'supervisor' && supervisorOk(tok, cfg)) return send(res, 200, { ...base, role: 'supervisor' });
     if (tok?.role === 'teacher') { const t = await store.get('teacher:' + tok.id); if (teacherOk(tok, t)) return send(res, 200, { ...base, role: 'teacher', name: t.name }); }
     if (tok?.role === 'student') { const t = await store.get('teacher:' + tok.tid); if (studentOf(tok, t)) return send(res, 200, { ...base, role: 'student' }); }
@@ -337,25 +337,7 @@ async function handle(req, res) {
     setAuth(res, { role: 'supervisor', kind: 'owner', epoch: cfg.supEpoch });
     return send(res, 200, { ok: true });
   }
-  if (method === 'POST' && p === '/api/teacher/register') {
-    limit(req, 'register', 10);
-    const b = await readBody(req, 5000), name = clean(b.name, 120), login = validLogin(b.login), pass = clean(b.password, 200);
-    if (name.length < 3) err('name_required');
-    if (pass.length < 6) err('password_too_short');
-    const id = await store.tx(async t => {
-      const cfg = await t.get('config');
-      if (cfg.regCode && !safeSame(clean(b.regCode, 60), cfg.regCode)) err('invalid_reg_code', 401);
-      const tid = cfg.nextTeacherId++;
-      if (!(await t.insert('login:' + login, { id: tid }))) err('login_taken', 409);
-      const classCode = await uniqueClassCode(t);
-      await t.set('class:' + classCode, { code: classCode, id: tid });
-      await t.set('teacher:' + tid, { id: tid, name, login, passHash: hash(pass), epoch: 1, createdAt: now(), lastLoginAt: now(), blocked: false, classCode, round: 1, phase: 'setup', quiz: null, attempts: [], teams: makeTeams(7), nextMemberId: 1, history: [] });
-      await t.set('config', cfg);
-      return tid;
-    });
-    setAuth(res, { role: 'teacher', id, epoch: 1 });
-    return send(res, 200, { ok: true });
-  }
+  // Teachers cannot register themselves: only the director creates their logins.
   if (method === 'POST' && p === '/api/teacher/login') {
     limit(req, 'teacher-login', 20);
     const b = await readBody(req, 5000), login = clean(b.login, 60).toLowerCase(), pass = clean(b.password, 200);
@@ -482,7 +464,7 @@ async function handle(req, res) {
     if (method === 'GET' && p === '/api/supervisor') {
       const teachers = (await store.list('teacher:')).map(teacherSummary).sort((a, b) => a.name.localeCompare(b.name));
       const directors = owner ? Object.values(cfg.directors || {}).map(d => ({ login: d.login, name: d.name, createdAt: d.createdAt, lastLoginAt: d.lastLoginAt || null })) : null;
-      return send(res, 200, { teachers, owner, actor, directors, questions: testOf(cfg), customTest: Array.isArray(cfg.questions) && cfg.questions.length > 0, regCode: cfg.regCode, answerKeyCount: Object.keys(cfg.answerKeys || {}).length, legacyAttempts: cfg.legacyAttempts || [], hasLegacy: !!cfg.hasLegacy, storage: pool ? 'postgres' : 'local' });
+      return send(res, 200, { teachers, owner, actor, directors, questions: testOf(cfg), customTest: Array.isArray(cfg.questions) && cfg.questions.length > 0, answerKeyCount: Object.keys(cfg.answerKeys || {}).length, legacyAttempts: cfg.legacyAttempts || [], hasLegacy: !!cfg.hasLegacy, storage: pool ? 'postgres' : 'local' });
     }
     const one = /^\/api\/supervisor\/teacher\/(\d+)$/.exec(p);
     if (method === 'GET' && one) { const t = await store.get('teacher:' + one[1]); if (!t) err('not_found', 404); return send(res, 200, teacherView(t, cfg, { forSupervisor: true })); }
@@ -539,11 +521,6 @@ async function handle(req, res) {
         await t.set('config', c);
         return { ok: true };
       }));
-    }
-    if (method === 'POST' && p === '/api/supervisor/settings') {
-      const b = await readBody(req, 5000), code = clean(b.regCode, 60);
-      if (code && code.length < 4) err('code_too_short');
-      return send(res, 200, await store.tx(async t => { const c = await t.get('config'); c.regCode = code; await t.set('config', c); return { ok: true }; }));
     }
     if (method === 'POST' && p === '/api/supervisor/answers') {
       const b = await readBody(req, 250000), keys = sanitizedAnswerKeys(b.answerKeys);
