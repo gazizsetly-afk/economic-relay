@@ -2,53 +2,41 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#292765">
-<meta name="description" content="Экономикалық эстафета — интерактивная командная игра по экономике">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#231d6b">
+<meta name="description" content="Экономикалық эстафета — командная игра по экономике: личный кабинет преподавателя, тест и задания для студентов на казахском и русском">
 <title>Экономикалық эстафета · Экономическая эстафета</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="/images/campus.webp">
 <link rel="stylesheet" href="/styles.css">
 <script src="/app.js" defer></script>
 </head>
 <body>
-<div class="campus-bg" aria-hidden="true"><div class="campus-photo campus-photo-1"></div><div class="campus-photo campus-photo-2"></div></div>
+<div class="scene" aria-hidden="true">
+  <div class="scene-photo"></div>
+  <div class="scene-tint"></div>
+  <svg class="scene-waves" viewBox="0 0 1600 900" preserveAspectRatio="none">
+    <path class="wave w1" d="M0,760 C300,690 520,840 820,770 C1120,700 1320,800 1600,730"/>
+    <path class="wave w2" d="M0,815 C260,760 560,880 860,815 C1160,750 1380,850 1600,790"/>
+    <path class="wave w3" d="M0,110 C320,40 620,170 930,95 C1210,30 1420,120 1600,70"/>
+  </svg>
+  <div class="glow g1"></div><div class="glow g2"></div>
+</div>
 <header class="topbar wrap">
-  <div class="brandline">
-    <div class="brand-icon" aria-hidden="true">✦</div>
-    <div><span class="micro" id="stageCaption">2 ТУР / 2 КЕЗЕҢ</span>
-      <button type="button" class="brand-secret" id="brandSecret" title="Кіру / Вход">ЭКОНОМИЧЕСКАЯ ЭСТАФЕТА</button>
-    </div>
-  </div>
+  <a class="brand" href="/" id="brandLink">
+    <span class="brand-mark">✦</span>
+    <span class="brand-text"><small id="brandSmall">ЭКОНОМИЧЕСКАЯ</small><b id="brandBig">ЭСТАФЕТА</b></span>
+  </a>
   <div class="top-actions">
-    <div class="lang-toggle" role="group" aria-label="Language / Тіл"><button id="langRu" type="button">RU</button><button id="langKk" type="button">ҚАЗ</button></div>
-    <button id="signout" class="iconbtn hidden" type="button" aria-label="Выход" title="Выход">↪</button>
+    <div class="lang" role="group" aria-label="Тіл / Язык"><button id="langKk" type="button">ҚАЗ</button><button id="langRu" type="button">RU</button></div>
+    <button id="signout" class="ghost-btn hidden" type="button"></button>
   </div>
 </header>
-<main class="wrap">
-  <section class="hero" id="hero">
-    <div class="hero-copy">
-      <span class="hero-kicker" id="heroKicker">✦ 2 ТУР · ЭКОНОМИЧЕСКАЯ ЭСТАФЕТА</span>
-      <h1 id="heroHeading">Вместе думаем.<br>Вместе побеждаем.</h1>
-      <p id="heroCaption">Экономическая эстафета: у каждой команды свой маршрут заданий.</p>
-      <div class="hero-facts"><div><b>20</b><span id="factQuestions">вопросов</span></div><div><b id="factTeams">7</b><span id="factTeamsLabel">команд</span></div><div><b id="factTasks">—</b><span id="factTasksLabel">заданий</span></div></div>
-    </div>
-    <div class="hero-visual" aria-hidden="true"><div class="halo halo1"></div><div class="halo halo2"></div><div class="trophy">🏆</div><div class="float-card fc1">✦ &nbsp; TEAM PLAY</div><div class="float-card fc2">📈 &nbsp; +10 XP</div><div class="sparkle sp1">✶</div><div class="sparkle sp2">✦</div></div>
-  </section>
-  <section id="app" aria-live="polite"><div class="loading">Загрузка...</div></section>
-</main>
-<footer class="footer">✦ Экономикалық эстафета · Экономическая эстафета <span>© 2026</span></footer>
-<dialog id="teacherDialog" class="login-dialog">
- <form id="teacherForm" class="login-form">
-  <button type="button" class="close-dialog" id="dialogClose" aria-label="Закрыть">×</button>
-  <div class="login-glyph">🔐</div>
-  <h2 id="loginHeading">Вход преподавателя</h2>
-  <p class="subdued" id="loginCaption">Введите личный пароль преподавателя.</p>
-  <label class="label" for="teacherPassword" id="passwordLabel">Пароль</label>
-  <input id="teacherPassword" name="password" type="password" autocomplete="current-password" required minlength="1" placeholder="••••••••••" class="input">
-  <button type="submit" class="btn primary full" id="loginSubmit">Войти →</button>
- </form>
-</dialog>
+<main class="wrap" id="app" aria-live="polite"><div class="loading"><span></span></div></main>
+<footer class="footer wrap"><span id="footerText">✦ Экономикалық эстафета · Экономическая эстафета</span><button type="button" class="link-btn" id="supervisorLink"></button></footer>
+<dialog id="dialog" class="dialog"><div id="dialogBody"></div></dialog>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-</body></html>
+</body>
+</html>

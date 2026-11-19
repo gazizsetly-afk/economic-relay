@@ -1,8 +1,8 @@
 {
   "name": "economic-relay",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "private": true,
-  "description": "Bilingual economics relay with the official 20-question teacher test, ten bilingual complex team assignments with 50-point rubric and persistent PostgreSQL support",
+  "description": "Bilingual (KK/RU) economics relay: personal teacher accounts with the 20-question test and their own classes, a supervisor dashboard, ten team cases with a 50-point rubric, PostgreSQL storage",
   "scripts": {
     "start": "node server.js",
     "check": "node --check server.js",

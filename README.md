@@ -1,51 +1,44 @@
-# Экономикалық эстафета / Экономическая эстафета — v4.0
+# Экономикалық эстафета / Экономическая эстафета — v5
 
-A bilingual, mobile-friendly web app for a college economics competition. The **teacher** takes a 20-question five-choice quiz and opens student registration. Students join a team with a separate PIN and complete **one shared team submission**. The teacher has a hidden, password-protected dashboard, judging tools, rankings, QR, exports, and durable PostgreSQL storage (if `DATABASE_URL` is set).
+A bilingual (Kazakh / Russian) web app for a college economics competition.
 
-## New in v4
+## Who does what
 
-- Imported all **10 different team cases** from the supplied Russian and Kazakh DOCX files; each case has the original **three stages** (analysis, calculation, decision), both languages, and a separate title.
-- **7 or 10 teams:** in the teacher dashboard, under Tasks, select **7** or **10**, then click **Load ready assignments / Дайын тапсырмаларды жүктеу**. New clean installs preload the first 7 cases. Existing PostgreSQL data is **never overwritten on deploy**; loading is an explicit teacher action available only before starting the teacher's quiz.
-- Students see only their team's case, with three separate written answer fields (or an optional photo upload). The document specifies **30–35 minutes** for written preparation and a **≤4-minute oral defense with an A3 poster**. The physical presentation must still take place in person.
-- The teacher grades each original case on the source's **50-point rubric** (analysis 10, calculation 15, solution 15, oral defense/A3 poster 10). Scores and rankings use each assignment's proper maximum; ordinary extra tasks still use the prior **10-point** scale.
-- For safety, **jury model answers are NOT in the public GitHub project or the ZIP**. A separate **`teacher-only-answers-economic-relay.json`** is provided to the project owner. In the teacher dashboard → Settings → **Import jury answers**, select that file once. The answers are saved to the server's existing protected database and visible only through authenticated teacher endpoints. Never upload the private file to GitHub.
-- The teacher can still add up to **30 tasks per team**, and submitting one unlocks the next automatically. The original 20-question RU/KK teacher test, translations, team registration, persistent DB, export and privacy checks remain.
+| Role | How they sign in | What they can do |
+|---|---|---|
+| **Teacher** | Registers on the home page (full name, login, password) and signs in any time | Takes the 20-question test, gets a personal 6-digit **class code** + QR, picks 7 or 10 teams, opens the cases for their students, grades on the 50-point rubric, exports CSV, starts a new lesson |
+| **Supervisor** (руководитель / басшы) | "Вход руководителя" link in the footer, password = `TEACHER_PASSWORD` from Render | Sees every teacher: test score and level, class status, students, submissions, grades and answers; resets passwords, blocks/deletes accounts, creates accounts, sets a registration code, imports jury model answers, exports a CSV report |
+| **Student** | Enters the teacher's class code (or scans the QR), picks a team, types the team PIN | Sees only their team's case (3 stages, KK/RU). The first student in a team is the captain and sends one shared answer (text for each stage + optional photo) |
 
-## New in v4.1
+The teacher's cases only open after that teacher has finished the test for the current lesson.
 
-- **Open teacher test for many teachers.** The home page has a *Teacher test / Мұғалімдер тесті* card: any number of teachers enter their full name and take the 20-question test (no admin password), and see their score, level and the correct answers right away. The answer key is sent only after an attempt is submitted. Results appear in the teacher dashboard → **Teacher test** tab, with CSV export and deletion. An optional access code can be set there. The admin's own quiz and the lesson flow did not change.
-- **Campus photos** (`images/campus-1.jpg`, `images/campus-2.jpg`) slowly alternate in the page background.
+## Content (unchanged)
+
+- `teacher-test.json` — the 20 bilingual five-choice questions and answer key (answers are sent to a teacher only after they finish).
+- `official-team-assignments.json` — the 10 bilingual team cases, instructions and the 50-point rubric (analysis 10, calculation 15, decision 15, oral defense with A3 poster 10). **No model answers.**
+- Jury model answers stay out of GitHub. The supervisor imports the private `teacher-only-answers-economic-relay.json` once (Settings → Jury answers); teachers then see them while grading.
 
 ## Files
 
 | File | Purpose |
 |---|---|
-| `server.js` | Node 22 HTTP API, sessions, teams, teacher questions, grading, privacy, PostgreSQL/local JSON |
-| `teacher-test.json` | Existing 20 bilingual teacher test questions and answer key |
-| `official-team-assignments.json` | **Public student** cases: the 10 bilingual prompts, instructions and the 50-point rubric; **no model answers** |
-| `index.html`, `styles.css`, `app.js` | Bilingual responsive student and teacher UI |
-| `MUGALIMGE_NUSKAULYK.md` | Full Kazakh teacher instructions (including deployment and importing private answer keys) |
-| `tests/` | Smoke tests for both old and new functionality; run `npm test` |
+| `server.js` | Node 22 HTTP API: accounts, sessions, classes, grading, supervisor, storage |
+| `index.html`, `styles.css`, `app.js` | Responsive bilingual UI with the animated campus background (`images/campus.webp`) |
+| `MUGALIMGE_NUSKAULYK.md` | Kazakh instructions for teachers and the supervisor |
+| `tests/` | `npm test` |
+
+## Storage
+
+With `DATABASE_URL` set, data lives in PostgreSQL table `relay_kv` (one row per teacher, class code, login and photo). The table from v4 (`economic_relay_state`) is **not modified**: on first start v5 copies the jury answers, the supervisor's changed password and earlier open-test results from it, and the supervisor can download the whole old record (Settings → Data of the previous version). Without `DATABASE_URL` a local `data/relay-v5.json` file is used (development only).
 
 ## Deployment to Render
 
-1. Extract this ZIP. Upload **the contents**, not the ZIP, to `https://github.com/gazizsetly-afk/economic-relay`, replacing files of the same names. Keep `official-team-assignments.json` and `teacher-test.json` at the repository root. **Do not upload** the separately supplied `teacher-only-answers-economic-relay.json`, a `.env` file, a PostgreSQL connection string, or any student responses.
-2. In Render, use a **Node** Web Service, branch `main`, **Build:** `npm install`, **Start:** `npm start`. The supplied `.node-version` specifies `22.16.0`.
-3. Environment secrets: `TEACHER_PASSWORD` (private, strong), `SESSION_SECRET` (random 32+ characters), `NODE_ENV=production`, `DATABASE_URL` (private Neon PostgreSQL connection URL). Do not change `SESSION_SECRET` on an existing working installation, because team PIN encryption depends on it.
-4. Trigger **Manual Deploy → Deploy latest commit** if auto-deploy does not run. Look for `Persistent PostgreSQL storage connected` and `Live` in Render. Current service URL might be `https://economic-relay-1.onrender.com`, but use the URL shown on your own Render dashboard.
-5. Take a backup from the teacher dashboard → Settings → JSON export. If a teacher quiz is already complete, finish/archive that round using **Settings → New round** before importing new cases; the import is deliberately blocked once a lesson has started.
-6. Teacher → **Tasks** → import the 7 or 10 prepared student cases. Teacher → **Settings** → import the **separate private answer JSON** from their local computer once. Then take the 20-question teacher quiz and press **Open student assignments**.
-
-PostgreSQL stores the one-row `economic_relay_state` record as JSONB. Render Free local storage is ephemeral; without `DATABASE_URL`, data can be lost on restarts. Take backups before deployment or new rounds. The import reuses existing team names and PINs in corresponding positions when possible, but it *replaces those teams' case lists* while in setup. Confirm this explicitly in the UI.
+Render deploys `main` automatically. Environment: `TEACHER_PASSWORD` (supervisor password), `SESSION_SECRET` (keep the existing value), `DATABASE_URL`, `NODE_ENV=production`. Optional: `PUBLIC_URL` for QR links, `SUPERVISOR_PASSWORD` to use a different supervisor password than `TEACHER_PASSWORD`.
 
 ## Local development
 
 ```sh
 npm install
-# set TEACHER_PASSWORD and SESSION_SECRET in your environment, or copy .env.example to .env
-node --env-file=.env server.js
-# visit http://localhost:3000
+TEACHER_PASSWORD=dev-pass node server.js   # http://localhost:3000
 npm test
 ```
-
-Student photographs accept JPG/PNG/WebP up to **2.7 MB**. Each student's name belongs only to the selected team, and the **first registrant becomes captain**; only the captain may submit. The teacher can change captains. Team assignments are isolated on server routes. Model answer imports can only be performed by the authenticated teacher.
