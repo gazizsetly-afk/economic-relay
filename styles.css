@@ -280,3 +280,5 @@ textarea.input{resize:vertical;line-height:1.55}
 }
 @media (max-width:420px){.ghost-btn{padding:8px 10px;font-size:12px}.lang button{padding:7px 9px}.rubric{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+.brand-text{min-width:0;overflow:hidden}.brand-text small,.brand-text b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:360px){.brand-text small{display:none}.brand-mark{width:36px;height:36px;font-size:20px}.topbar{gap:8px}}
