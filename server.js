@@ -24,6 +24,7 @@ const OFFICIAL = require('./official-team-assignments.json');
 const CASES = new Map(OFFICIAL.teams.map(t => [t.id, t]));
 const RUBRIC = { analysis: 10, calculation: 15, decision: 15, defense: 10 };
 const MAX_SCORE = 50;
+const MIN_TEAMS = 2, MAX_TEAMS = 20;
 
 // ---------- helpers ----------
 function err(code, status = 400) { const e = new Error(code); e.status = status; throw e; }
@@ -205,7 +206,7 @@ function studentOf(tok, t) {
 // ---------- domain ----------
 function makeTeams(count, old = []) {
   return Array.from({ length: count }, (_, i) => ({
-    id: i + 1, officialId: i + 1,
+    id: i + 1, officialId: (i % CASES.size) + 1,
     name: old[i]?.name || `Команда ${i + 1}`,
     pin: old[i]?.pin || encrypt(newPin()),
     ...(old[i]?.custom ? { custom: old[i].custom } : {}),
@@ -395,7 +396,7 @@ async function handle(req, res) {
     }
     if (method === 'POST' && p === '/api/teacher/teams') {
       const b = await readBody(req, 5000), count = Number(b.count);
-      if (![7, 10].includes(count)) err('team_count');
+      if (!Number.isInteger(count) || count < MIN_TEAMS || count > MAX_TEAMS) err('team_count');
       return send(res, 200, await mutate(async d => {
         if (d.phase !== 'setup') err('setup_only', 409);
         if (d.teams.some(x => x.members.length || x.submission)) err('existing_responses', 409);

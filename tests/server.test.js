@@ -59,6 +59,13 @@ test('two teachers with their own accounts, classes, quiz and students; supervis
   // students can't join before the teacher's quiz + open
   assert.equal((await call('s1', '/api/class/' + a.classCode)).data.phase, 'setup');
   assert.equal((await call('t1', '/api/teacher/open', 'POST', {})).data.error, 'quiz_first');
+  assert.equal((await call('t1', '/api/teacher/teams', 'POST', { count: 1 })).data.error, 'team_count');
+  assert.equal((await call('t1', '/api/teacher/teams', 'POST', { count: 21 })).data.error, 'team_count');
+  assert.equal((await call('t1', '/api/teacher/teams', 'POST', { count: 13 })).status, 200);
+  const thirteen = (await call('t1', '/api/teacher')).data.teams;
+  assert.equal(thirteen.length, 13); assert.equal(thirteen[10].officialId, 1); assert.equal(thirteen[12].case.ru.title, thirteen[2].case.ru.title);
+  assert.equal((await call('t1', '/api/teacher/teams', 'POST', { count: 4 })).status, 200);
+  assert.equal((await call('t1', '/api/teacher')).data.teams.length, 4);
   assert.equal((await call('t1', '/api/teacher/teams', 'POST', { count: 10 })).status, 200);
   assert.equal((await call('t1', '/api/teacher/quiz', 'POST', { answers: Array(19).fill(0) })).status, 400);
   const quiz = await call('t1', '/api/teacher/quiz', 'POST', { answers: correct });

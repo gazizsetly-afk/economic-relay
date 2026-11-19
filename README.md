@@ -6,7 +6,7 @@ A bilingual (Kazakh / Russian) web app for a college economics competition.
 
 | Role | How they sign in | What they can do |
 |---|---|---|
-| **Teacher** | Registers on the home page (full name, login, password) and signs in any time | Takes the 20-question test, gets a personal 6-digit **class code** + QR, picks 7 or 10 teams, opens the cases for their students, grades on the 50-point rubric, exports CSV, starts a new lesson |
+| **Teacher** | Registers on the home page (full name, login, password) and signs in any time | Takes the 20-question test, gets a personal 6-digit **class code** + QR, picks how many teams (2–20; cases repeat after 10), opens the cases for their students, grades on the 50-point rubric, exports CSV, starts a new lesson |
 | **Supervisor** (руководитель / басшы) | "Вход руководителя" link in the footer, password = `TEACHER_PASSWORD` from Render | Sees every teacher: test score and level, class status, students, submissions, grades and answers; resets passwords, blocks/deletes accounts, creates accounts, sets a registration code, imports jury model answers, exports a CSV report |
 | **Student** | Enters the teacher's class code (or scans the QR), picks a team, types the team PIN | Sees only their team's case (3 stages, KK/RU). The first student in a team is the captain and sends one shared answer (text for each stage + optional photo) |
 

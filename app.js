@@ -51,7 +51,7 @@ const S = {
   hello: ['Здравствуйте', 'Сәлеметсіз бе'], tabHome: ['Главная', 'Басты'], tabTest: ['Тест', 'Тест'], tabTeams: ['Команды', 'Командалар'], tabGrade: ['Оценки', 'Бағалау'], tabProfile: ['Профиль', 'Профиль'],
   lesson: ['Занятие', 'Сабақ'], phase_setup: ['Подготовка', 'Дайындық'], phase_open: ['Задания открыты', 'Тапсырмалар ашық'], phase_closed: ['Приём закрыт', 'Қабылдау жабық'],
   step1: ['Пройдите тест', 'Тест тапсырыңыз'], step1t: ['Тест по экономике и финансовой грамотности. Без теста задания не откроются.', 'Экономика және қаржылық сауаттылық бойынша тест. Тестсіз тапсырмалар ашылмайды.'],
-  step2: ['Подготовьте команды', 'Командаларды дайындаңыз'], step2t: ['Выберите 7 или 10 команд, при желании измените задания и раздайте PIN-коды.', '7 немесе 10 команданы таңдап, қажет болса тапсырмаларды өзгертіп, PIN-кодтарды беріңіз.'],
+  step2: ['Подготовьте команды', 'Командаларды дайындаңыз'], step2t: ['Выберите количество команд (2–20), при желании измените задания и раздайте PIN-коды.', 'Командалар санын таңдап (2–20), қажет болса тапсырмаларды өзгертіп, PIN-кодтарды беріңіз.'],
   step3: ['Откройте задания', 'Тапсырмаларды ашыңыз'], step3t: ['Студенты входят по коду класса или QR, выбирают команду и вводят PIN.', 'Студенттер сынып коды не QR арқылы кіріп, команданы таңдап, PIN енгізеді.'],
   step4: ['Оцените команды', 'Командаларды бағалаңыз'], step4t: ['50 баллов: этапы 10 + 15 + 15 и устная защита 10.', '50 балл: кезеңдер 10 + 15 + 15 және ауызша қорғау 10.'],
   takeTest: ['Пройти тест', 'Тест тапсыру'], testDone: ['Тест пройден', 'Тест тапсырылды'], openTasks: ['Открыть задания студентам', 'Студенттерге тапсырма ашу'], closeTasks: ['Закрыть приём ответов', 'Жауап қабылдауды жабу'], reopen: ['Открыть снова', 'Қайта ашу'],
@@ -63,7 +63,7 @@ const S = {
   question: ['Вопрос', 'Сұрақ'], finishTest: ['Завершить тест', 'Тестті аяқтау'], chooseAnswer: ['Выберите ответ.', 'Жауапты таңдаңыз.'], answerAll: ['Ответьте на все вопросы.', 'Барлық сұраққа жауап беріңіз.'],
   testResult: ['Результат теста', 'Тест нәтижесі'], level: ['Уровень', 'Деңгей'], lv_high: ['Высокий уровень', 'Жоғары деңгей'], lv_good: ['Хороший уровень', 'Жақсы деңгей'], lv_basic: ['Базовый уровень', 'Базалық деңгей'], lv_repeat: ['Требуется повторение материала', 'Материалды қайталау қажет'],
   correctAnswer: ['Правильный ответ', 'Дұрыс жауап'], yourChoice: ['Ваш ответ', 'Сіздің жауабыңыз'], sec1: ['Основы экономики', 'Экономика негіздері'], sec2: ['Финансовая грамотность', 'Қаржылық сауаттылық'], sec3: ['Практика и рынок', 'Тәжірибе және нарық'],
-  teamCount: ['Количество команд', 'Командалар саны'], teamCountHelp: ['Можно менять, пока задания не открыты и в командах никого нет.', 'Тапсырмалар ашылмай, командаларда ешкім болмаса ғана өзгертуге болады.'], apply: ['Применить', 'Қолдану'],
+  teamCount: ['Количество команд', 'Командалар саны'], teamCountHelp: ['Выберите от 2 до 20 команд. Можно менять, пока задания не открыты и в командах никого нет.', '2-ден 20-ға дейін команда таңдаңыз. Тапсырмалар ашылмай, командаларда ешкім болмаса ғана өзгертуге болады.'], casesRepeat: ['В документе 10 кейсов: команды после 10-й получают их по кругу (11-я — кейс 1 и т. д.). Любое задание можно изменить кнопкой «Изменить задание».', 'Құжатта 10 кейс бар: 10-нан кейінгі командаларға олар қайта беріледі (11-ші — 1-кейс т.с.с.). Кез келген тапсырманы «Тапсырманы өзгерту» батырмасымен өзгертуге болады.'], err_team_count: ['Количество команд — от 2 до 20.', 'Командалар саны 2-ден 20-ға дейін.'], apply: ['Применить', 'Қолдану'],
   teamName: ['Название', 'Атауы'], pin: ['PIN', 'PIN'], newPin: ['Новый PIN', 'Жаңа PIN'], makeCaptain: ['Сделать капитаном', 'Капитан ету'], remove: ['Удалить', 'Өшіру'], noMembers: ['Пока никого нет', 'Әзірге ешкім жоқ'],
   printPins: ['Распечатать PIN-коды', 'PIN-кодтарды басып шығару'],
   gradeTitle: ['Ответы команд и оценка жюри', 'Команда жауаптары және қазылар бағасы'], noAnswer: ['Ответа пока нет', 'Әзірге жауап жоқ'], judgeKey: ['Образец ответа для жюри', 'Қазыларға арналған үлгі жауап'],
@@ -388,7 +388,7 @@ async function finishQuiz() {
 
 function teamsUI() {
   const d = data, locked = d.phase !== 'setup' || d.teams.some(t => t.members.length);
-  return `${card('⚙ ' + L('teamCount'), `<p class="muted">${L('teamCountHelp')}</p><div class="seg">${[7, 10].map(n => `<button type="button" class="${d.teams.length === n ? 'on' : ''}" ${locked ? 'disabled' : ''} onclick="setCount(${n})">${n}</button>`).join('')}</div><button class="btn ghost small mt" onclick="printPins()">🖨 ${L('printPins')}</button>`)}
+  return `${card('⚙ ' + L('teamCount'), `<p class="muted">${L('teamCountHelp')}</p><div class="count-picker"><button type="button" class="btn ghost" ${locked || d.teams.length <= 2 ? 'disabled' : ''} onclick="stepCount(-1)" aria-label="−">−</button><input class="input count-input" id="teamCountIn" type="number" min="2" max="20" value="${d.teams.length}" ${locked ? 'disabled' : ''} aria-label="${L('teamCount')}"><button type="button" class="btn ghost" ${locked || d.teams.length >= 20 ? 'disabled' : ''} onclick="stepCount(1)" aria-label="+">+</button><button type="button" class="btn primary" ${locked ? 'disabled' : ''} onclick="applyCount()">${L('apply')}</button></div><div class="seg mt">${[5, 7, 10, 15].map(n => `<button type="button" class="${d.teams.length === n ? 'on' : ''}" ${locked ? 'disabled' : ''} onclick="setCount(${n})">${n}</button>`).join('')}</div>${d.teams.length > 10 ? `<p class="note mt">${L('casesRepeat')}</p>` : ''}<button class="btn ghost small mt" onclick="printPins()">🖨 ${L('printPins')}</button>`)}
   <div class="team-grid">${d.teams.map(t => { const c = t.case?.[lang] || t.case?.ru; return `<section class="card team reveal">
     <div class="team-head"><span class="team-no">${t.id}</span><input class="input bare" value="${esc(t.name)}" maxlength="60" onchange="renameTeam(${t.id}, this.value)" aria-label="${L('teamName')}"></div>
     <p class="muted small">📚 ${esc(c?.title || '')} ${t.custom ? pill('✏ ' + L('edited'), 'amber') : ''}</p>
@@ -399,7 +399,9 @@ function teamsUI() {
     ${t.submission ? pill('✓ ' + L('statSubmitted'), 'green') : ''}
   </section>`; }).join('')}</div>`;
 }
-async function setCount(n) { await act('/teacher/teams', { count: n }); }
+async function setCount(n) { if (n === data.teams.length) return; await act('/teacher/teams', { count: n }); }
+function stepCount(delta) { const el = $('teamCountIn'); el.value = Math.max(2, Math.min(20, (Number(el.value) || data.teams.length) + delta)); }
+async function applyCount() { const n = Number($('teamCountIn').value); if (!Number.isInteger(n) || n < 2 || n > 20) { toast(errText('team_count')); return; } await setCount(n); }
 async function renameTeam(id, name) { await act('/teacher/team', { teamId: id, name }); }
 async function newPin(id) { if (!confirm(L('newPin') + '?')) return; await act('/teacher/team', { teamId: id, newPin: true }); }
 async function memberAct(teamId, memberId, action) { if (!confirm((action === 'remove' ? L('remove') : L('makeCaptain')) + '?')) return; await act('/teacher/member', { teamId, memberId, action }); }

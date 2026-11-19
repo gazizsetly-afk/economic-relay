@@ -302,3 +302,5 @@ textarea.input{resize:vertical;line-height:1.55}
 .radio small{color:var(--muted)}
 .qopt.right .radio small{color:#0b7a6a;font-weight:800}
 @media (max-width:720px){.case-editor,.qedit-grid{grid-template-columns:1fr}.qopt{grid-template-columns:1fr}}
+
+.count-picker{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.count-input{width:90px;text-align:center;font-size:20px;font-weight:800}.count-picker .btn.ghost{width:46px;padding:12px 0;font-size:20px}
