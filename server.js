@@ -136,10 +136,13 @@ async function readBody(req,max=4500000){let size=0, chunks=[];for await(const c
 const clean=(v,max=6000)=>String(v??'').trim().slice(0,max);
 function exposedTeam(t){return {id:t.id,name:t.name,tasks:t.tasks.map(publicTask),pin:decrypt(t.pin_cipher),members:t.members.map(m=>({...m})),score:taskTotal(t),graded:taskGraded(t),maxScore:t.tasks.reduce((n,k)=>n+taskMax(k),0)};}
 function leaderboard(s){return s.teams.map(t=>({id:t.id,name:t.name,members:t.members.length,submitted:t.tasks.some(k=>!!k.submission),completed:t.tasks.filter(k=>!!k.submission).length,taskCount:t.tasks.length,graded:taskGraded(t),maxScore:t.tasks.reduce((n,k)=>n+taskMax(k),0),score:taskGraded(t)?taskTotal(t):null})).sort((a,b)=>(b.score??-1)-(a.score??-1)||a.name.localeCompare(b.name));}
-function publicInfo(s,req){const tok=readToken(req);const admin=!!tok&&tok.role==='teacher'&&tok.epoch===s.teacherEpoch;const team=s.teams.find(t=>t.id===tok?.teamId);const participant=!!tok&&tok.role==='member'&&tok.round===s.round&&team?.members.some(m=>m.id===tok.memberId);return {phase:s.phase,round:s.round,teacher:admin,member:participant,quizDone:s.quiz.completed,teams:s.phase==='open'||s.phase==='closed'||admin?s.teams.map(({id,name})=>({id,name})):[],leaderboard:s.phase==='open'||s.phase==='closed'||admin?leaderboard(s):[]};}
+function publicInfo(s,req){const tok=readToken(req);const admin=!!tok&&tok.role==='teacher'&&tok.epoch===s.teacherEpoch;const team=s.teams.find(t=>t.id===tok?.teamId);const participant=!!tok&&tok.role==='member'&&tok.round===s.round&&team?.members.some(m=>m.id===tok.memberId);return {phase:s.phase,round:s.round,teacher:admin,member:participant,quizDone:s.quiz.completed,teacherTestCode:!!s.teacherTestCode,teams:s.phase==='open'||s.phase==='closed'||admin?s.teams.map(({id,name})=>({id,name})):[],leaderboard:s.phase==='open'||s.phase==='closed'||admin?leaderboard(s):[]};}
 function checkPhoto(data){if(!data)return null;if(typeof data!=='string'||data.length>3900000)err('image_too_large',413);const match=/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(data);if(!match)err('invalid_image');const bytes=Buffer.from(match[2],'base64');if(bytes.length>2700000||bytes.length<12)err('image_too_large',413);const type=match[1],hex=bytes.subarray(0,12).toString('hex');if(!(type==='image/png'&&hex.startsWith('89504e470d0a1a0a')||type==='image/jpeg'&&hex.startsWith('ffd8')||type==='image/webp'&&bytes.toString('ascii',0,4)==='RIFF'&&bytes.toString('ascii',8,12)==='WEBP'))err('invalid_image');return {type,data:bytes.toString('base64')};}
 function validateQuestions(questions){if(!Array.isArray(questions)||questions.length!==20)err('need_20_questions');return questions.map((q,i)=>{const ru=clean(q.ru,450),kk=clean(q.kk,450),r=q.options_ru,k=q.options_kk,correct=Number(q.correct);if(!ru||!kk||!Array.isArray(r)||!Array.isArray(k)||r.length<4||r.length>5||k.length!==r.length||r.some(x=>!clean(x,350))||k.some(x=>!clean(x,350))||!Number.isInteger(correct)||correct<0||correct>=r.length)err('question_incomplete');return {id:i+1,ru,kk,options_ru:r.map(x=>clean(x,350)),options_kk:k.map(x=>clean(x,350)),correct};});}
-const rate=new Map();function limit(req,key){const ip=String(req.headers['x-forwarded-for']||req.socket.remoteAddress||'unknown').split(',')[0].trim();const k=ip+':'+key;const now=Date.now();const v=rate.get(k)||[];const recent=v.filter(time=>time>now-600000);if(recent.length>=12)err('try_later',429);recent.push(now);rate.set(k,recent);if(rate.size>5000){for(const [id,v] of rate)if(v.every(t=>t<now-600000))rate.delete(id);}}
+const rate=new Map();function limit(req,key,max=12){const ip=String(req.headers['x-forwarded-for']||req.socket.remoteAddress||'unknown').split(',')[0].trim();const k=ip+':'+key;const now=Date.now();const v=rate.get(k)||[];const recent=v.filter(time=>time>now-600000);if(recent.length>=max)err('try_later',429);recent.push(now);rate.set(k,recent);if(rate.size>5000){for(const [id,v] of rate)if(v.every(t=>t<now-600000))rate.delete(id);}}
+function quizLevel(score){return score>=18?'high':score>=14?'good':score>=10?'basic':'repeat';}
+function publicQuestions(s){return s.questions.map(q=>({id:q.id,ru:q.ru,kk:q.kk,options_ru:q.options_ru,options_kk:q.options_kk}));}
+function checkTestCode(s,code){if(s.teacherTestCode&&!safeSame(clean(code,60),s.teacherTestCode))err('invalid_test_code',401);}
 function csvCell(v){let s=String(v??'');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return '"'+s.replaceAll('"','""')+'"';}
 
 async function handle(req,res){
@@ -147,17 +150,49 @@ async function handle(req,res){
  if(method==='GET'&&(p==='/'||p==='/index.html'))return text(res,200,fs.readFileSync(HTML_PATH),'text/html; charset=utf-8');
  if(method==='GET'&&p==='/styles.css')return text(res,200,fs.readFileSync(path.join(__dirname,'styles.css')),'text/css; charset=utf-8');
  if(method==='GET'&&p==='/app.js')return text(res,200,fs.readFileSync(path.join(__dirname,'app.js')),'text/javascript; charset=utf-8');
+ const pic=/^\/images\/(campus-[12]\.jpg)$/.exec(p);
+ if(method==='GET'&&pic){res.writeHead(200,{'Content-Type':'image/jpeg','Cache-Control':'public,max-age=86400','X-Content-Type-Options':'nosniff'});return res.end(fs.readFileSync(path.join(__dirname,'images',pic[1])));}
  if(method==='GET'&&p==='/health')return send(res,200,{ok:true,storage:pool?'postgres':'local',ready:true});
  if(method==='GET'&&p==='/api/public')return send(res,200,publicInfo(await readState(),req));
  if(method==='GET'&&p==='/api/qr'){
    const qr=require('qrcode');const origin=clean(process.env.PUBLIC_URL||`${(PROD?'https':(req.headers['x-forwarded-proto']||'http'))}://${req.headers.host||'localhost:'+PORT}`,500);const png=await qr.toBuffer(origin,{type:'png',width:420,margin:2,color:{dark:'#25205aff',light:'#ffffffff'}});res.writeHead(200,{'Content-Type':'image/png','Cache-Control':'public,max-age=60'});return res.end(png);
  }
  if(method==='POST'&&p==='/api/logout'){clearAuth(res);return send(res,200,{ok:true});}
+ // Open 20-question test for any number of teachers: each enters a name, answers, sees the result.
+ if(method==='POST'&&p==='/api/teacher-test/start'){
+   limit(req,'ttest-start',120);const b=await readBody(req,10000);const s=await readState();checkTestCode(s,b.code);
+   return send(res,200,{questions:publicQuestions(s)});
+ }
+ if(method==='POST'&&p==='/api/teacher-test/submit'){
+   limit(req,'ttest-submit',60);const b=await readBody(req,20000),name=clean(b.name,120);if(name.length<3)err('name_required');
+   return send(res,200,await changeState(s=>{checkTestCode(s,b.code);
+     if(!Array.isArray(b.answers)||b.answers.length!==s.questions.length||b.answers.some((a,i)=>!Number.isInteger(a)||a<0||a>=s.questions[i].options_ru.length))err('answer_all');
+     const correct=s.questions.map(q=>q.correct),score=b.answers.filter((a,i)=>a===correct[i]).length;
+     s.teacherAttempts=Array.isArray(s.teacherAttempts)?s.teacherAttempts:[];
+     const id=(s.nextAttemptId||1);s.nextAttemptId=id+1;
+     s.teacherAttempts.unshift({id,name,score,total:correct.length,level:quizLevel(score),answers:b.answers,finishedAt:new Date().toISOString()});
+     s.teacherAttempts=s.teacherAttempts.slice(0,3000);
+     return {ok:true,score,total:correct.length,correct};
+   }));
+ }
+ if(method==='POST'&&p==='/api/admin/teacher-test'){
+   const b=await readBody(req,10000);return send(res,200,await changeState(s=>{teacher(s,req);
+     if(b.action==='code'){const code=clean(b.code,60);if(code&&code.length<4)err('code_too_short');s.teacherTestCode=code;}
+     else if(b.action==='delete'){const id=Number(b.id);s.teacherAttempts=(s.teacherAttempts||[]).filter(a=>a.id!==id);}
+     else if(b.action==='clear'){if(b.confirm!=='CLEAR')err('confirm_required');s.teacherAttempts=[];}
+     else err('invalid_action');return {ok:true};
+   }));
+ }
+ if(method==='GET'&&p==='/api/admin/teacher-csv'){
+   const s=await readState();teacher(s,req);const letters=['А','Б','В','Г','Д'];
+   const rows=[['ФИО / Аты-жөні','Балл','Из / Барлығы','Уровень / Деңгей','Дата',...s.questions.map((q,i)=>'В'+(i+1))],...(s.teacherAttempts||[]).map(a=>[a.name,a.score,a.total,a.level,a.finishedAt,...a.answers.map(x=>letters[x]||'')])];
+   const body='﻿'+rows.map(row=>row.map(csvCell).join(',')).join('\r\n');res.writeHead(200,{'Content-Type':'text/csv; charset=utf-8','Content-Disposition':'attachment; filename="teacher-test-results.csv"','Cache-Control':'no-store'});return res.end(body);
+ }
  if(method==='POST'&&p==='/api/teacher/login'){
    limit(req,'teacher');const b=await readBody(req);const s=await readState();const pass=clean(b.password,300);if(!pass||!(s.teacherHash?verify(pass,s.teacherHash):INITIAL_PASSWORD&&safeSame(pass,INITIAL_PASSWORD)))err('incorrect_password',401);setAuth(res,{role:'teacher',epoch:s.teacherEpoch});return send(res,200,{ok:true});
  }
  if(method==='GET'&&p==='/api/admin'){
-   const s=await readState();teacher(s,req);return send(res,200,{phase:s.phase,round:s.round,quiz:s.quiz,questions:s.questions,teams:s.teams.map(exposedTeam),history:s.history,answerKeys:s.officialAnswerKeys||{},officialGuide:officialAssignments.instructions,storage:pool?'postgres':'local'});
+   const s=await readState();teacher(s,req);return send(res,200,{phase:s.phase,round:s.round,quiz:s.quiz,questions:s.questions,teams:s.teams.map(exposedTeam),history:s.history,answerKeys:s.officialAnswerKeys||{},officialGuide:officialAssignments.instructions,teacherAttempts:s.teacherAttempts||[],teacherTestCode:s.teacherTestCode||'',storage:pool?'postgres':'local'});
  }
  if(method==='POST'&&p==='/api/admin/teams'){
    const b=await readBody(req);return send(res,200,await changeState(s=>{teacher(s,req);if(s.phase!=='setup')err('edit_before_quiz',409);

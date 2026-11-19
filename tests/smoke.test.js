@@ -139,3 +139,28 @@ test('legacy completed test remains coherent until the next round, then uses off
  assert.equal(adm.quiz.completed,false);assert.equal(adm.teams[0].tasks[0].ru,'Do not delete');
  assert.equal(adm.history[0].quizScore,12);
 });
+
+test('many teachers can take the open 20-question test without the admin password',async t=>{
+ const {query}=await setup(t);
+ const start=await query('member1','/api/teacher-test/start','POST',{});
+ assert.equal(start.status,200);assert.equal(start.data.questions.length,20);
+ assert.ok(start.data.questions.every(q=>q.correct===undefined),'answer key is not sent before submitting');
+ assert.equal((await query('member1','/api/teacher-test/submit','POST',{name:'Ай',answers:Array(20).fill(0)})).status,400);
+ assert.equal((await query('member1','/api/teacher-test/submit','POST',{name:'Айгүл Серікова',answers:Array(19).fill(0)})).status,400);
+ const a=await query('member1','/api/teacher-test/submit','POST',{name:'Айгүл Серікова',answers:Array(20).fill(1)});
+ assert.equal(a.status,200);assert.equal(a.data.total,20);assert.equal(a.data.correct.length,20);
+ const b=await query('member2','/api/teacher-test/submit','POST',{name:'Иван Петров',answers:a.data.correct});
+ assert.equal(b.data.score,20);
+ assert.equal((await query('member1','/api/admin')).status,401);
+ assert.equal((await query('teacher','/api/teacher/login','POST',{password:'teacher-test-password'})).status,200);
+ let adm=(await query('teacher','/api/admin')).data;
+ assert.equal(adm.teacherAttempts.length,2);assert.equal(adm.teacherAttempts[0].name,'Иван Петров');assert.equal(adm.teacherAttempts[0].score,20);
+ assert.equal(adm.quiz.completed,false,'teachers\' test does not change the lesson phase');
+ assert.equal((await query('teacher','/api/admin/teacher-test','POST',{action:'code',code:'4321'})).status,200);
+ assert.equal((await query('member1','/api/public')).data.teacherTestCode,true);
+ assert.equal((await query('member1','/api/teacher-test/start','POST',{code:'0000'})).status,401);
+ assert.equal((await query('member1','/api/teacher-test/start','POST',{code:'4321'})).status,200);
+ const csv=await query('teacher','/api/admin/teacher-csv');assert.equal(csv.status,200);
+ assert.equal((await query('teacher','/api/admin/teacher-test','POST',{action:'delete',id:adm.teacherAttempts[1].id})).status,200);
+ adm=(await query('teacher','/api/admin')).data;assert.equal(adm.teacherAttempts.length,1);
+});

@@ -11,6 +11,11 @@ A bilingual, mobile-friendly web app for a college economics competition. The **
 - For safety, **jury model answers are NOT in the public GitHub project or the ZIP**. A separate **`teacher-only-answers-economic-relay.json`** is provided to the project owner. In the teacher dashboard → Settings → **Import jury answers**, select that file once. The answers are saved to the server's existing protected database and visible only through authenticated teacher endpoints. Never upload the private file to GitHub.
 - The teacher can still add up to **30 tasks per team**, and submitting one unlocks the next automatically. The original 20-question RU/KK teacher test, translations, team registration, persistent DB, export and privacy checks remain.
 
+## New in v4.1
+
+- **Open teacher test for many teachers.** The home page has a *Teacher test / Мұғалімдер тесті* card: any number of teachers enter their full name and take the 20-question test (no admin password), and see their score, level and the correct answers right away. The answer key is sent only after an attempt is submitted. Results appear in the teacher dashboard → **Teacher test** tab, with CSV export and deletion. An optional access code can be set there. The admin's own quiz and the lesson flow did not change.
+- **Campus photos** (`images/campus-1.jpg`, `images/campus-2.jpg`) slowly alternate in the page background.
+
 ## Files
 
 | File | Purpose |

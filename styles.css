@@ -53,3 +53,22 @@
 .submission{white-space:pre-wrap;overflow-wrap:anywhere}
 @media(max-width:990px){.student-main{grid-template-columns:1fr}.official-import{align-items:flex-start;flex-direction:column}.official-import>.row{justify-content:flex-start}}
 @media(max-width:600px){.stage-box{padding:15px;gap:11px;border-radius:15px}.stage-box p{font-size:12px}.stage-box h4{font-size:13px}.stage-chip{width:30px;height:30px;border-radius:10px}.official-stage-header h3{font-size:19px}.rubric-grid{grid-template-columns:1fr}.official-import>.row{gap:8px}}
+
+/* Campus photos as a soft, slowly alternating page background */
+.campus-bg{position:fixed;inset:0;z-index:-1;overflow:hidden;background:#f8f9ff}
+.campus-bg:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#f8f9ff73 0%,#f8f9ff99 50%,#f8f9ffbf 100%)}
+.campus-photo{position:absolute;inset:-2%;background-size:cover;background-position:center;opacity:0;animation:campusFade 24s ease-in-out infinite}
+.campus-photo-1{background-image:url(/images/campus-1.jpg);background-position:center 40%}
+.campus-photo-2{background-image:url(/images/campus-2.jpg);background-position:center 30%;animation-delay:-12s}
+@keyframes campusFade{0%{opacity:0;transform:scale(1)}8%{opacity:1}46%{opacity:1}54%{opacity:0;transform:scale(1.04)}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.campus-photo{animation:none}.campus-photo-1{opacity:1}}
+body{background:transparent}
+.panel,.number-tile{backdrop-filter:blur(2px)}
+.footer{position:relative}
+.tt-card{border-top:4px solid #0cb6a0}
+.tt-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tt-table{width:100%;border-collapse:collapse;font-size:14px;min-width:560px}
+.tt-table th{text-align:left;font-size:12px;color:var(--muted);font-weight:800;padding:10px 8px;border-bottom:1px solid var(--border)}
+.tt-table td{padding:10px 8px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tt-table tr:last-child td{border-bottom:0}
+.teacher-strip .subdued,.footer{color:#3f4566}
