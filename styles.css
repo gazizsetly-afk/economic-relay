@@ -282,3 +282,23 @@ textarea.input{resize:vertical;line-height:1.55}
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
 .brand-text{min-width:0;overflow:hidden}.brand-text small,.brand-text b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media (max-width:360px){.brand-text small{display:none}.brand-mark{width:36px;height:36px;font-size:20px}.topbar{gap:8px}}
+
+/* ---------- v5.1: case editor, test editor, director page ---------- */
+.center-block{margin:30px auto}
+.mb{margin-bottom:10px}
+.dialog.wide{width:min(980px,calc(100vw - 24px));max-height:calc(100vh - 32px)}
+.case-editor{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.case-lang{border:1.5px solid var(--line);border-radius:18px;padding:14px;margin:0;min-width:0}
+.case-lang legend{font-weight:800;padding:0 8px;color:var(--violet-d)}
+.case-stage{background:#f7f6fd;border-radius:14px;padding:10px 12px 2px;margin-bottom:10px}
+.case-stage>b{display:block;font-size:12px;color:var(--violet-d);margin-bottom:6px}
+.qedit>summary{display:flex;align-items:center;gap:12px;cursor:pointer;list-style:none;font-weight:700}
+.qedit>summary::-webkit-details-marker{display:none}
+.qedit[open]>summary{margin-bottom:14px}
+.qedit-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.qopt{display:grid;grid-template-columns:110px 1fr 1fr;gap:8px;align-items:center;padding:6px;border-radius:14px;margin-bottom:6px}
+.qopt.right{background:#e1f8f2}
+.radio{display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer}
+.radio small{color:var(--muted)}
+.qopt.right .radio small{color:#0b7a6a;font-weight:800}
+@media (max-width:720px){.case-editor,.qedit-grid{grid-template-columns:1fr}.qopt{grid-template-columns:1fr}}

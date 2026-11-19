@@ -3,7 +3,7 @@
 const S = {
   brandSmall: ['ЭКОНОМИЧЕСКАЯ', 'ЭКОНОМИКАЛЫҚ'], brandBig: ['ЭСТАФЕТА', 'ЭСТАФЕТА'],
   footer: ['✦ Экономикалық эстафета · Экономическая эстафета', '✦ Экономикалық эстафета · Экономическая эстафета'],
-  supervisorLink: ['Вход руководителя', 'Басшының кіруі'],
+  supervisorLink: ['Вход для директора', 'Директорға кіру'],
   logout: ['Выйти', 'Шығу'], loading: ['Загрузка…', 'Жүктелуде…'],
   heroKicker: ['✦ КОМАНДНАЯ ИГРА ПО ЭКОНОМИКЕ', '✦ ЭКОНОМИКА БОЙЫНША КОМАНДАЛЫҚ ОЙЫН'],
   heroTitle: ['Вместе думаем.<br><span>Вместе побеждаем.</span>', 'Бірге ойлаймыз.<br><span>Бірге жеңеміз.</span>'],
@@ -16,7 +16,19 @@ const S = {
   fullName: ['ФИО', 'Аты-жөні'], login: ['Логин', 'Логин'], loginHint: ['латиница, цифры, . _ - @ (3–40 символов)', 'латын әріптері, сандар, . _ - @ (3–40 таңба)'],
   password: ['Пароль', 'Құпиясөз'], passwordHint: ['не короче 6 символов', 'кемі 6 таңба'], regCode: ['Код регистрации (от руководителя)', 'Тіркелу коды (басшыдан)'],
   teacherLogin: ['Вход преподавателя', 'Мұғалімнің кіруі'], noAccount: ['Нет аккаунта? Зарегистрируйтесь', 'Аккаунт жоқ па? Тіркеліңіз'], haveAccount: ['Уже есть аккаунт? Войти', 'Аккаунт бар ма? Кіру'],
-  supervisorLogin: ['Вход руководителя', 'Басшының кіруі'], supervisorText: ['Руководитель видит всех преподавателей, их тесты, классы и оценки.', 'Басшы барлық мұғалімді, олардың тестін, сыныптары мен бағаларын көреді.'],
+  supervisorLogin: ['Вход для директора', 'Директорға кіру'], supervisorText: ['Директор видит всех преподавателей, их тесты, студентов и оценки. Главный администратор входит с логином admin.', 'Директор барлық мұғалімді, олардың тестін, студенттері мен бағаларын көреді. Бас әкімші admin логинімен кіреді.'],
+  toHome: ['На главную', 'Басты бетке'],
+  editCase: ['Изменить задание', 'Тапсырманы өзгерту'], editCaseTitle: ['Задание команды', 'Команда тапсырмасы'], editCaseHelp: ['Измените название и три этапа на обоих языках. Студенты увидят новое задание сразу. Образцы ответов жюри для изменённого задания не показываются.', 'Атауын және үш кезеңін екі тілде өзгертіңіз. Студенттер жаңа тапсырманы бірден көреді. Өзгертілген тапсырмаға қазылардың үлгі жауаптары көрсетілмейді.'],
+  caseTitle: ['Название кейса', 'Кейс атауы'], stageHeading: ['Заголовок этапа', 'Кезең тақырыбы'], stageBody: ['Текст этапа', 'Кезең мәтіні'], restoreCase: ['Вернуть исходное задание', 'Бастапқы тапсырманы қайтару'], restoreConfirm: ['Вернуть исходное задание из документа?', 'Құжаттағы бастапқы тапсырманы қайтару керек пе?'],
+  edited: ['изменено', 'өзгертілген'], caseFill: ['Заполните название и все три этапа на обоих языках.', 'Атауын және үш кезеңді екі тілде толтырыңыз.'],
+  tabTestEdit: ['Тест учителей', 'Мұғалімдер тесті'], testEditTitle: ['Редактор теста для преподавателей', 'Мұғалімдер тестінің редакторы'], testEditHelp: ['Изменять тест может только директор. Новый тест применяется к следующим попыткам; уже пройденные результаты сохраняются.', 'Тестті тек директор өзгерте алады. Жаңа тест келесі әрекеттерге қолданылады; бұрынғы нәтижелер сақталады.'],
+  addQuestion: ['Добавить вопрос', 'Сұрақ қосу'], removeQuestion: ['Удалить вопрос', 'Сұрақты өшіру'], saveTest: ['Сохранить тест', 'Тестті сақтау'], restoreTest: ['Вернуть исходные 20 вопросов', 'Бастапқы 20 сұрақты қайтару'], restoreTestConfirm: ['Вернуть исходный тест из 20 вопросов?', 'Бастапқы 20 сұрақтық тестті қайтару керек пе?'],
+  correctMark: ['верный', 'дұрыс'], option: ['Вариант', 'Нұсқа'], questionsCount: ['вопросов', 'сұрақ'], customTest: ['Тест изменён директором', 'Тестті директор өзгерткен'], originalTest: ['Исходный тест', 'Бастапқы тест'], testFill: ['Заполните все поля вопросов и вариантов на обоих языках.', 'Сұрақтар мен нұсқалардың барлық өрістерін екі тілде толтырыңыз.'],
+  tabAccess: ['Доступ директоров', 'Директорлар қолжетімділігі'], accessTitle: ['Логины для директора и проверяющих', 'Директор мен тексерушілерге арналған логиндер'], accessHelp: ['Создайте логин и пароль и передайте их директору. Он входит на отдельной странице:', 'Логин мен құпиясөз жасап, директорға беріңіз. Ол бөлек беттен кіреді:'],
+  directorPassHint: ['не короче 8 символов', 'кемі 8 таңба'], createDirector: ['Создать доступ', 'Қолжетімділік жасау'], noDirectors: ['Пока нет ни одного логина.', 'Әзірге логин жоқ.'], directorReset: ['Новый пароль (не короче 8 символов):', 'Жаңа құпиясөз (кемі 8 таңба):'], directorDelete: ['Удалить этот доступ?', 'Бұл қолжетімділікті өшіру керек пе?'],
+  signedInAs: ['Вы вошли как', 'Сіз кірдіңіз:'], ownerName: ['главный администратор', 'бас әкімші'],
+  err_owner_only: ['Только главный администратор.', 'Тек бас әкімші.'], err_password_too_short_8: ['Пароль — минимум 8 символов.', 'Құпиясөз кемі 8 таңба.'], err_case_incomplete: ['Заполните название и все три этапа на обоих языках.', 'Атауын және үш кезеңді екі тілде толтырыңыз.'],
+  err_question_incomplete: ['Заполните все поля вопросов и вариантов на обоих языках.', 'Сұрақтар мен нұсқалардың барлық өрістерін екі тілде толтырыңыз.'], err_questions_count: ['В тесте должно быть от 5 до 40 вопросов.', 'Тестте 5-тен 40-қа дейін сұрақ болуы керек.'],
   close: ['Закрыть', 'Жабу'], cancel: ['Отмена', 'Болдырмау'], save: ['Сохранить', 'Сақтау'], saved: ['Сохранено ✓', 'Сақталды ✓'], back: ['Назад', 'Артқа'], next: ['Далее', 'Келесі'],
   // student
   classOf: ['Класс преподавателя', 'Мұғалімнің сыныбы'], waitTitle: ['Задания ещё закрыты', 'Тапсырмалар әлі жабық'], waitText: ['Преподаватель откроет задания после теста. Страница обновится сама.', 'Мұғалім тесттен кейін тапсырмаларды ашады. Бет өзі жаңарады.'],
@@ -38,8 +50,8 @@ const S = {
   // teacher
   hello: ['Здравствуйте', 'Сәлеметсіз бе'], tabHome: ['Главная', 'Басты'], tabTest: ['Тест', 'Тест'], tabTeams: ['Команды', 'Командалар'], tabGrade: ['Оценки', 'Бағалау'], tabProfile: ['Профиль', 'Профиль'],
   lesson: ['Занятие', 'Сабақ'], phase_setup: ['Подготовка', 'Дайындық'], phase_open: ['Задания открыты', 'Тапсырмалар ашық'], phase_closed: ['Приём закрыт', 'Қабылдау жабық'],
-  step1: ['Пройдите тест', 'Тест тапсырыңыз'], step1t: ['20 вопросов по экономике и финансовой грамотности. Без теста задания не откроются.', 'Экономика және қаржылық сауаттылық бойынша 20 сұрақ. Тестсіз тапсырмалар ашылмайды.'],
-  step2: ['Подготовьте команды', 'Командаларды дайындаңыз'], step2t: ['Выберите 7 или 10 команд и раздайте студентам PIN-коды.', '7 немесе 10 команданы таңдап, студенттерге PIN-кодтарды беріңіз.'],
+  step1: ['Пройдите тест', 'Тест тапсырыңыз'], step1t: ['Тест по экономике и финансовой грамотности. Без теста задания не откроются.', 'Экономика және қаржылық сауаттылық бойынша тест. Тестсіз тапсырмалар ашылмайды.'],
+  step2: ['Подготовьте команды', 'Командаларды дайындаңыз'], step2t: ['Выберите 7 или 10 команд, при желании измените задания и раздайте PIN-коды.', '7 немесе 10 команданы таңдап, қажет болса тапсырмаларды өзгертіп, PIN-кодтарды беріңіз.'],
   step3: ['Откройте задания', 'Тапсырмаларды ашыңыз'], step3t: ['Студенты входят по коду класса или QR, выбирают команду и вводят PIN.', 'Студенттер сынып коды не QR арқылы кіріп, команданы таңдап, PIN енгізеді.'],
   step4: ['Оцените команды', 'Командаларды бағалаңыз'], step4t: ['50 баллов: этапы 10 + 15 + 15 и устная защита 10.', '50 балл: кезеңдер 10 + 15 + 15 және ауызша қорғау 10.'],
   takeTest: ['Пройти тест', 'Тест тапсыру'], testDone: ['Тест пройден', 'Тест тапсырылды'], openTasks: ['Открыть задания студентам', 'Студенттерге тапсырма ашу'], closeTasks: ['Закрыть приём ответов', 'Жауап қабылдауды жабу'], reopen: ['Открыть снова', 'Қайта ашу'],
@@ -47,7 +59,7 @@ const S = {
   yourClass: ['Код вашего класса', 'Сыныбыңыздың коды'], classHelp: ['Покажите студентам код или QR. Ссылка ведёт сразу в ваш класс.', 'Студенттерге кодты немесе QR көрсетіңіз. Сілтеме бірден сыныбыңызға апарады.'], copyLink: ['Скопировать ссылку', 'Сілтемені көшіру'],
   statStudents: ['студентов', 'студент'], statSubmitted: ['ответов', 'жауап'], statGraded: ['оценено', 'бағаланды'], statTeams: ['команд', 'команда'],
   testTitle: ['Тест для преподавателей колледжа по основам экономики и финансовой грамотности', 'Колледж оқытушыларына арналған экономика негіздері және қаржылық сауаттылық бойынша тест'],
-  testDesc: ['Один правильный ответ из пяти. 1 балл за верный ответ, максимум — 20. Тест проходится один раз за занятие.', 'Бес нұсқаның біреуі дұрыс. Әр дұрыс жауап — 1 балл, барлығы — 20. Тест әр сабаққа бір рет тапсырылады.'],
+  testDesc: ['Выберите один правильный ответ. 1 балл за верный ответ. Тест проходится один раз за занятие.', 'Бір дұрыс жауапты таңдаңыз. Әр дұрыс жауап — 1 балл. Тест әр сабаққа бір рет тапсырылады.'],
   question: ['Вопрос', 'Сұрақ'], finishTest: ['Завершить тест', 'Тестті аяқтау'], chooseAnswer: ['Выберите ответ.', 'Жауапты таңдаңыз.'], answerAll: ['Ответьте на все вопросы.', 'Барлық сұраққа жауап беріңіз.'],
   testResult: ['Результат теста', 'Тест нәтижесі'], level: ['Уровень', 'Деңгей'], lv_high: ['Высокий уровень', 'Жоғары деңгей'], lv_good: ['Хороший уровень', 'Жақсы деңгей'], lv_basic: ['Базовый уровень', 'Базалық деңгей'], lv_repeat: ['Требуется повторение материала', 'Материалды қайталау қажет'],
   correctAnswer: ['Правильный ответ', 'Дұрыс жауап'], yourChoice: ['Ваш ответ', 'Сіздің жауабыңыз'], sec1: ['Основы экономики', 'Экономика негіздері'], sec2: ['Финансовая грамотность', 'Қаржылық сауаттылық'], sec3: ['Практика и рынок', 'Тәжірибе және нарық'],
@@ -63,7 +75,7 @@ const S = {
   newRoundConfirm: ['Начать новое занятие? Студенты текущего занятия будут отключены.', 'Жаңа сабақ бастау керек пе? Ағымдағы студенттер шығарылады.'],
   history: ['История занятий', 'Сабақтар тарихы'], historyEmpty: ['Завершённых занятий пока нет.', 'Аяқталған сабақ әзірге жоқ.'], account: ['Аккаунт', 'Аккаунт'],
   // supervisor
-  supTitle: ['Кабинет руководителя', 'Басшы кабинеті'], supSub: ['Все преподаватели, их тесты, классы и результаты студентов.', 'Барлық мұғалімдер, олардың тесті, сыныптары және студент нәтижелері.'],
+  supTitle: ['Кабинет директора', 'Директор кабинеті'], supSub: ['Все преподаватели, их тесты, классы и результаты студентов.', 'Барлық мұғалімдер, олардың тесті, сыныптары және студент нәтижелері.'],
   tabTeachers: ['Преподаватели', 'Мұғалімдер'], tabSettings: ['Настройки', 'Баптаулар'],
   sTeachers: ['преподавателей', 'мұғалім'], sPassed: ['прошли тест', 'тест тапсырды'], sAvg: ['средний балл теста', 'тесттің орташа балы'], sOpen: ['классов открыто', 'сынып ашық'], sStudents: ['студентов сейчас', 'қазір студент'],
   search: ['Поиск по ФИО или логину', 'Аты-жөні не логин бойынша іздеу'], noTeachers: ['Преподаватели ещё не зарегистрировались. Отправьте им ссылку на сайт.', 'Мұғалімдер әлі тіркелмеген. Оларға сайт сілтемесін жіберіңіз.'],
@@ -117,6 +129,7 @@ async function act(url, body, okMsg = L('saved')) {
   catch (e) { toast(errText(e.message)); if (e.message === 'session_expired' || e.message === 'not_authorized') await load(); return null; }
 }
 function setLang(code) { lang = code; try { localStorage.setItem('economic-relay.lang', code); } catch {} render(true); }
+const onDirectorPage = () => location.pathname === '/director';
 function urlCode() { const c = new URLSearchParams(location.search).get('c'); return /^\d{6}$/.test(c || '') ? c : ''; }
 function setUrlCode(code) { const u = new URL(location.href); if (code) u.searchParams.set('c', code); else u.searchParams.delete('c'); history.replaceState(null, '', u); }
 
@@ -143,7 +156,7 @@ function header() {
   document.documentElement.lang = lang;
   $('brandSmall').textContent = L('brandSmall'); $('brandBig').textContent = L('brandBig');
   $('footerText').textContent = L('footer'); $('supervisorLink').textContent = L('supervisorLink');
-  $('supervisorLink').classList.toggle('hidden', !!session?.role);
+  $('supervisorLink').classList.toggle('hidden', !!session?.role || onDirectorPage());
   $('langRu').classList.toggle('active', lang === 'ru'); $('langKk').classList.toggle('active', lang === 'kk');
   $('signout').textContent = '↪ ' + L('logout'); $('signout').classList.toggle('hidden', !session?.role);
   document.body.dataset.role = session?.role || 'guest';
@@ -151,8 +164,8 @@ function header() {
 function render(force) {
   header();
   if (!session) return;
-  const view = (session.role || (classInfo ? 'class' : 'landing')) + ':' + (session.role === 'supervisor' ? (detail ? 'detail' : tab) : tab);
-  const html = session.role === 'teacher' ? teacherUI() : session.role === 'supervisor' ? supervisorUI() : session.role === 'student' ? studentUI() : classInfo ? classUI() : landingUI();
+  const view = (session.role || (onDirectorPage() ? 'director' : classInfo ? 'class' : 'landing')) + ':' + (session.role === 'supervisor' ? (detail ? 'detail' : tab) : tab);
+  const html = session.role === 'teacher' ? teacherUI() : session.role === 'supervisor' ? supervisorUI() : session.role === 'student' ? studentUI() : onDirectorPage() ? directorLoginUI() : classInfo ? classUI() : landingUI();
   const app = $('app'), opened = {};
   app.querySelectorAll('details[data-k]').forEach(el => opened[el.dataset.k] = el.open);
   app.innerHTML = html;
@@ -189,7 +202,7 @@ async function goClass(e) {
   if (!/^\d{6}$/.test(code)) { toast(errText('class_not_found')); return; }
   try { classInfo = await api('/class/' + code); setUrlCode(code); render(); } catch (ex) { toast(errText(ex.message)); }
 }
-function dialog(html) { $('dialogBody').innerHTML = `<button class="dialog-x" type="button" onclick="closeDialog()" aria-label="${L('close')}">×</button>` + html; if (!$('dialog').open) $('dialog').showModal(); }
+function dialog(html, size = '') { $('dialog').className = 'dialog ' + size; $('dialogBody').innerHTML = `<button class="dialog-x" type="button" onclick="closeDialog()" aria-label="${L('close')}">×</button>` + html; if (!$('dialog').open) $('dialog').showModal(); }
 function closeDialog() { $('dialog').close(); }
 function openTeacherDialog(mode) {
   loginMode = mode;
@@ -214,14 +227,14 @@ async function teacherAuth(e) {
     closeDialog(); tab = 'home'; setUrlCode(''); await load();
   } catch (ex) { toast(errText(ex.message)); }
 }
-function openSupervisorDialog() {
-  dialog(`<div class="dialog-icon gold">🏛️</div><h2>${L('supervisorLogin')}</h2><p class="muted">${L('supervisorText')}</p>
-  <form onsubmit="supervisorAuth(event)">${field(L('password'), 'sPass', 'type="password" required autocomplete="current-password"')}<button class="btn primary full" type="submit">${L('signIn')} →</button></form>`);
-  setTimeout(() => $('sPass')?.focus(), 50);
+function directorLoginUI() {
+  return `<section class="card narrow center-block reveal"><div class="dialog-icon gold">🏛️</div><h2>${L('supervisorLogin')}</h2><p class="muted">${L('supervisorText')}</p>
+  <form onsubmit="supervisorAuth(event)">${field(L('login'), 'sLogin', 'required maxlength="40" autocomplete="username" autocapitalize="none" spellcheck="false"')}${field(L('password'), 'sPass', 'type="password" required autocomplete="current-password"')}<button class="btn primary full" type="submit">${L('signIn')} →</button></form>
+  <a class="link-btn center" href="/">← ${L('toHome')}</a></section>`;
 }
 async function supervisorAuth(e) {
   e.preventDefault();
-  try { await api('/supervisor/login', 'POST', { password: $('sPass').value }); closeDialog(); tab = 'teachers'; detail = null; await load(); }
+  try { await api('/supervisor/login', 'POST', { login: $('sLogin').value.trim(), password: $('sPass').value }); tab = 'teachers'; detail = null; await load(); }
   catch (ex) { toast(errText(ex.message)); }
 }
 
@@ -320,7 +333,7 @@ function go(next) { tab = next; render(); window.scrollTo({ top: 0, behavior: 's
 function teacherHome() {
   const d = data, students = d.teams.reduce((n, t) => n + t.members.length, 0), sub = d.teams.filter(t => t.submission).length, graded = d.teams.filter(t => t.submission?.score != null).length;
   const steps = [
-    [d.quiz ? 'done' : 'now', L('step1'), L('step1t'), d.quiz ? `${pill('✓ ' + L('testDone') + ': ' + d.quiz.score + '/20', 'green')}` : `<button class="btn primary small" onclick="go('test')">🧠 ${L('takeTest')}</button>`],
+    [d.quiz ? 'done' : 'now', L('step1'), L('step1t'), d.quiz ? `${pill('✓ ' + L('testDone') + ': ' + d.quiz.score + '/' + d.quiz.total, 'green')}` : `<button class="btn primary small" onclick="go('test')">🧠 ${L('takeTest')}</button>`],
     [d.phase !== 'setup' ? 'done' : d.quiz ? 'now' : '', L('step2'), L('step2t'), `<button class="btn ghost small" onclick="go('teams')">👥 ${L('goTeams')} (${d.teams.length})</button>`],
     [d.phase === 'open' ? 'now' : d.phase === 'closed' ? 'done' : '', L('step3'), L('step3t'), d.phase === 'open' ? `<button class="btn soft-red small" onclick="closeTasks()">◼ ${L('closeTasks')}</button>` : `<button class="btn green small" ${d.quiz ? '' : 'disabled'} onclick="openTasks()">🔓 ${d.phase === 'closed' ? L('reopen') : L('openTasks')}</button>`],
     [graded && graded === sub && sub ? 'done' : sub ? 'now' : '', L('step4'), L('step4t'), `<button class="btn ghost small" ${sub ? '' : 'disabled'} onclick="go('grade')">✎ ${L('goGrade')} (${graded}/${sub})</button>`],
@@ -340,7 +353,7 @@ function copyText(t) { (navigator.clipboard?.writeText(t) || Promise.reject()).t
 function testUI() {
   const d = data, qs = d.questions;
   if (d.quiz) {
-    return card('', `<div class="result-head"><div><h2>🎉 ${L('testResult')}</h2><p class="muted">${fmtDate(d.quiz.finishedAt)}</p></div><div class="score-ring" style="--p:${d.quiz.score / 20 * 100}"><b>${d.quiz.score}</b><small>/20</small></div></div>
+    return card('', `<div class="result-head"><div><h2>🎉 ${L('testResult')}</h2><p class="muted">${fmtDate(d.quiz.finishedAt)}</p></div><div class="score-ring" style="--p:${d.quiz.score / d.quiz.total * 100}"><b>${d.quiz.score}</b><small>/${d.quiz.total}</small></div></div>
       <p class="note good"><b>${L('level')}:</b> ${L('lv_' + d.quiz.level)}</p>
       ${qs.map((q, i) => { const mine = d.quiz.answers[i], ok = mine === q.correct; return `<details class="qa ${ok ? 'ok' : 'no'}"><summary>${ok ? '✅' : '❌'} ${i + 1}. ${esc(q[lang])}</summary><p><b>${L('correctAnswer')}:</b> ${LETTERS[q.correct]}) ${esc(q['options_' + lang][q.correct])}</p>${ok ? '' : `<p class="muted">${L('yourChoice')}: ${LETTERS[mine]}) ${esc(q['options_' + lang][mine])}</p>`}</details>`; }).join('')}`);
   }
@@ -348,7 +361,7 @@ function testUI() {
   return `<section class="card quiz reveal"><div class="quiz-top"><span class="pill">${L('question')} ${i + 1}/${n}</span><span class="muted small">${answered}/${n} ✓</span></div>
     <h2 class="quiz-title">🧠 ${L('testTitle')}</h2><p class="muted small">${L('testDesc')}</p>
     <div class="bar"><span style="width:${(i + 1) / n * 100}%"></span></div>
-    <span class="section-tag">${L(i < 7 ? 'sec1' : i < 14 ? 'sec2' : 'sec3')}</span>
+    ${n === 20 ? `<span class="section-tag">${L(i < 7 ? 'sec1' : i < 14 ? 'sec2' : 'sec3')}</span>` : ''}
     <h3 class="q-text">${i + 1}. ${esc(q[lang])}</h3>
     <div class="options">${q['options_' + lang].map((o, k) => `<label class="option ${quiz.answers[i] === k ? 'picked' : ''}" style="--d:${k * 60}ms"><input type="radio" name="qopt" ${quiz.answers[i] === k ? 'checked' : ''} onchange="pick(${k})"><span class="letter">${LETTERS[k]}</span><span>${esc(o)}</span></label>`).join('')}</div>
     <div class="quiz-nav"><button class="btn ghost" ${i === 0 ? 'disabled' : ''} onclick="qMove(-1)">← ${L('back')}</button><button class="btn primary" onclick="qMove(1)">${i === n - 1 ? L('finishTest') + ' ✓' : L('next') + ' →'}</button></div>
@@ -378,7 +391,8 @@ function teamsUI() {
   return `${card('⚙ ' + L('teamCount'), `<p class="muted">${L('teamCountHelp')}</p><div class="seg">${[7, 10].map(n => `<button type="button" class="${d.teams.length === n ? 'on' : ''}" ${locked ? 'disabled' : ''} onclick="setCount(${n})">${n}</button>`).join('')}</div><button class="btn ghost small mt" onclick="printPins()">🖨 ${L('printPins')}</button>`)}
   <div class="team-grid">${d.teams.map(t => { const c = t.case?.[lang] || t.case?.ru; return `<section class="card team reveal">
     <div class="team-head"><span class="team-no">${t.id}</span><input class="input bare" value="${esc(t.name)}" maxlength="60" onchange="renameTeam(${t.id}, this.value)" aria-label="${L('teamName')}"></div>
-    <p class="muted small">📚 ${esc(c?.title || '')}</p>
+    <p class="muted small">📚 ${esc(c?.title || '')} ${t.custom ? pill('✏ ' + L('edited'), 'amber') : ''}</p>
+    ${t.submission ? '' : `<button class="btn ghost tiny mb" onclick="openCaseEditor(${t.id})">✏ ${L('editCase')}</button>`}
     <div class="pin-row"><span>${L('pin')}</span><b class="pin">${esc(t.pin)}</b><button class="btn ghost tiny" onclick="newPin(${t.id})">↻ ${L('newPin')}</button></div>
     <h4>${L('members')} (${t.members.length})</h4>
     ${t.members.length ? `<ul class="member-list">${t.members.map(m => `<li>${m.isCaptain ? '★' : '•'} ${esc(m.name)} <span class="row-actions">${m.isCaptain ? '' : `<button class="link-btn" onclick="memberAct(${t.id},${m.id},'captain')">${L('makeCaptain')}</button>`}<button class="link-btn red" onclick="memberAct(${t.id},${m.id},'remove')">${L('remove')}</button></span></li>`).join('')}</ul>` : `<p class="muted small">${L('noMembers')}</p>`}
@@ -389,6 +403,25 @@ async function setCount(n) { await act('/teacher/teams', { count: n }); }
 async function renameTeam(id, name) { await act('/teacher/team', { teamId: id, name }); }
 async function newPin(id) { if (!confirm(L('newPin') + '?')) return; await act('/teacher/team', { teamId: id, newPin: true }); }
 async function memberAct(teamId, memberId, action) { if (!confirm((action === 'remove' ? L('remove') : L('makeCaptain')) + '?')) return; await act('/teacher/member', { teamId, memberId, action }); }
+function openCaseEditor(id) {
+  const t = data.teams.find(x => x.id === id), c = t.case;
+  const block = l => `<fieldset class="case-lang"><legend>${l === 'kk' ? 'ҚАЗ' : 'RU'}</legend>
+    ${field(L('caseTitle'), `ce_${l}_title`, `value="${esc(c[l].title)}" maxlength="200" required`)}
+    ${[0, 1, 2].map(i => `<div class="case-stage"><b>${L('stage')} ${i + 1}</b>${field(L('stageHeading'), `ce_${l}_h${i}`, `value="${esc(c[l].stages[i].heading)}" maxlength="200" required`)}<label class="field"><span>${L('stageBody')}</span><textarea class="input" id="ce_${l}_b${i}" rows="4" maxlength="4000" required>${esc(c[l].stages[i].body)}</textarea></label></div>`).join('')}
+  </fieldset>`;
+  dialog(`<h2>✏ ${L('editCaseTitle')}: ${esc(t.name)}</h2><p class="muted small">${L('editCaseHelp')}</p>
+    <div class="case-editor">${block('kk')}${block('ru')}</div>
+    <div class="btn-row mt"><button class="btn primary" onclick="saveCase(${id})">${L('save')}</button>${t.custom ? `<button class="btn ghost" onclick="resetCase(${id})">↺ ${L('restoreCase')}</button>` : ''}</div>`, 'wide');
+}
+async function saveCase(id) {
+  const content = {};
+  for (const l of ['ru', 'kk']) {
+    content[l] = { title: $(`ce_${l}_title`).value.trim(), stages: [0, 1, 2].map(i => ({ heading: $(`ce_${l}_h${i}`).value.trim(), body: $(`ce_${l}_b${i}`).value.trim() })) };
+    if (!content[l].title || content[l].stages.some(s => !s.heading || !s.body)) { toast(L('caseFill')); return; }
+  }
+  const r = await act('/teacher/case', { teamId: id, content }); if (r) closeDialog();
+}
+async function resetCase(id) { if (!confirm(L('restoreConfirm'))) return; const r = await act('/teacher/case', { teamId: id, reset: true }); if (r) closeDialog(); }
 function printPins() {
   const w = window.open('', '_blank'); if (!w) return;
   w.document.write(`<!doctype html><meta charset="utf-8"><title>PIN</title><style>body{font-family:system-ui,sans-serif;display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:20px}div{border:2px dashed #555;border-radius:12px;padding:18px}h2{margin:0 0 6px}b{font-size:30px;letter-spacing:4px}</style>${data.teams.map(t => `<div><h2>${esc(t.name)}</h2><p>${L('classCode')}: <b>${esc(data.classCode)}</b></p><p>${L('pin')}: <b>${esc(t.pin)}</b></p><small>${esc(location.origin)}</small></div>`).join('')}<script>print()<\/script>`);
@@ -401,9 +434,9 @@ function gradeUI() {
   ${d.teams.map((t, idx) => teamReview(t, idx, d, true)).join('')}`;
 }
 function teamReview(t, idx, d, editable) {
-  const c = t.case?.[lang] || t.case?.ru, sub = t.submission, key = d.answerKeys?.[t.officialId]?.[lang];
+  const c = t.case?.[lang] || t.case?.ru, sub = t.submission, key = t.custom ? null : d.answerKeys?.[t.officialId]?.[lang];
   const photoUrl = `/api/photo/${d.id}/${t.id}`;
-  return `<details class="card review reveal" data-k="rev${t.id}" ${idx === 0 && sub ? 'open' : ''}><summary><span class="team-no">${t.id}</span><span class="grow">${esc(t.name)}<small>${esc(c?.title || '')}</small></span>${sub ? (sub.score != null ? pill(sub.score + '/50', 'green') : pill(L('waitingGrade'), 'amber')) : pill(L('noAnswer'), 'gray')}</summary>
+  return `<details class="card review reveal" data-k="rev${t.id}" ${idx === 0 && sub ? 'open' : ''}><summary><span class="team-no">${t.id}</span><span class="grow">${esc(t.name)}<small>${esc(c?.title || '')}${t.custom ? ' · ✏ ' + L('edited') : ''}</small></span>${sub ? (sub.score != null ? pill(sub.score + '/50', 'green') : pill(L('waitingGrade'), 'amber')) : pill(L('noAnswer'), 'gray')}</summary>
     <p class="muted small">👥 ${t.members.map(m => (m.isCaptain ? '★ ' : '') + esc(m.name)).join(', ') || '—'}</p>
     ${sub ? `${c ? c.stages.map((s, i) => `<div class="answer"><b>${esc(s.heading)}</b><p>${esc(sub.answers[i] || '—')}</p>${key ? `<details class="key"><summary>🔐 ${L('judgeKey')}</summary><p>${esc(key[i])}</p></details>` : ''}</div>`).join('') : ''}
       ${sub.hasPhoto ? `<a class="btn ghost small" target="_blank" rel="noopener" href="${photoUrl}">📷 ${L('openPhoto')}</a>` : ''}
@@ -433,14 +466,14 @@ async function newRound() { if (!confirm(L('newRoundConfirm'))) return; const r 
 
 // ---------- supervisor ----------
 function supervisorUI() {
-  const tabs = [['teachers', '👩‍🏫', L('tabTeachers')], ['settings', '⚙', L('tabSettings')]];
+  const tabs = [['teachers', '👩‍🏫', L('tabTeachers')], ['testedit', '🧠', L('tabTestEdit')], ['settings', '⚙', L('tabSettings')], ...(data.owner ? [['access', '🔑', L('tabAccess')]] : [])];
   if (!tabs.some(t => t[0] === tab)) tab = 'teachers';
-  return `<div class="page-head reveal"><div><span class="muted small block">🏛️</span><h1>${L('supTitle')}</h1><p class="muted">${L('supSub')}</p></div></div>
+  return `<div class="page-head reveal"><div><span class="muted small block">🏛️ ${L('signedInAs')} ${esc(data.owner ? L('ownerName') : data.actor)}</span><h1>${L('supTitle')}</h1><p class="muted">${L('supSub')}</p></div></div>
   ${detail ? '' : `<nav class="tabs reveal">${tabs.map(([id, ic, label]) => `<button type="button" class="${tab === id ? 'on' : ''}" onclick="go('${id}')"><span>${ic}</span>${label}</button>`).join('')}</nav>`}
-  ${detail ? teacherDetailUI() : tab === 'settings' ? supSettingsUI() : supTeachersUI()}`;
+  ${detail ? teacherDetailUI() : tab === 'settings' ? supSettingsUI() : tab === 'testedit' ? testEditorUI() : tab === 'access' ? accessUI() : supTeachersUI()}`;
 }
 function supTeachersUI() {
-  const list = data.teachers, passed = list.filter(t => t.lastAttempt), avg = passed.length ? (passed.reduce((a, t) => a + t.lastAttempt.score, 0) / passed.length).toFixed(1) : '—';
+  const list = data.teachers, passed = list.filter(t => t.lastAttempt), avg = passed.length ? Math.round(passed.reduce((a, t) => a + t.lastAttempt.score / t.lastAttempt.total * 100, 0) / passed.length) + '%' : '—';
   const q = search.trim().toLowerCase(), shown = q ? list.filter(t => t.name.toLowerCase().includes(q) || t.login.includes(q)) : list;
   return `<div class="tiles reveal"><div class="tile"><b>${list.length}</b><span>${L('sTeachers')}</span></div><div class="tile"><b>${passed.length}</b><span>${L('sPassed')}</span></div><div class="tile"><b>${avg}</b><span>${L('sAvg')}</span></div><div class="tile"><b>${list.filter(t => t.phase === 'open').length}</b><span>${L('sOpen')}</span></div><div class="tile"><b>${list.reduce((n, t) => n + t.students, 0)}</b><span>${L('sStudents')}</span></div></div>
   <section class="card reveal"><div class="section-head"><input class="input search" id="searchBox" placeholder="🔎 ${L('search')}" value="${esc(search)}" oninput="search=this.value;filterTeachers()"><a class="btn ghost small" href="/api/supervisor/csv" download>↓ ${L('downloadCsv')}</a></div>
@@ -448,7 +481,7 @@ function supTeachersUI() {
 }
 function teacherRows(rows) {
   return rows.map(t => `<tr onclick="openTeacher(${t.id})"><td><b>${esc(t.name)}</b><small>${esc(t.login)}${t.blocked ? ' · ⛔ ' + L('blocked') : ''}</small></td>
-    <td>${t.lastAttempt ? `<b>${t.lastAttempt.score}</b>/20<small>${L('lv_' + t.lastAttempt.level)}</small>` : `<span class="muted">${L('notTaken')}</span>`}</td>
+    <td>${t.lastAttempt ? `<b>${t.lastAttempt.score}</b>/${t.lastAttempt.total}<small>${L('lv_' + t.lastAttempt.level)}</small>` : `<span class="muted">${L('notTaken')}</span>`}</td>
     <td>${phasePill(t.phase)}<small>${esc(t.classCode)} · ${L('lesson')} ${t.round}</small></td>
     <td>${t.students} 👤 · ${t.submitted}/${t.teams} ✓<small>${t.avgTeamScore != null ? '⌀ ' + t.avgTeamScore + '/50' : ''}</small></td>
     <td><small>${fmtDate(t.lastLoginAt)}</small></td><td><button class="btn ghost tiny">${L('details')} →</button></td></tr>`).join('');
@@ -486,6 +519,46 @@ function supSettingsUI() {
     ${card('📊 ' + L('exportTitle'), `<a class="btn ghost" href="/api/supervisor/csv" download>↓ ${L('downloadCsv')}</a>${d.hasLegacy ? `<h3 class="mt">${L('legacyTitle')}</h3><p class="muted">${L('legacyHelp')}</p><a class="btn ghost small" href="/api/supervisor/legacy-export" download>↓ ${L('legacyDownload')}</a>${d.legacyAttempts.length ? `<ul class="attempts">${d.legacyAttempts.map(a => `<li><b>${a.score}/${a.total}</b> ${esc(a.name)}<small>${fmtDate(a.finishedAt)}</small></li>`).join('')}</ul>` : ''}` : ''}`)}
   </div>`;
 }
+let testDraft = null;
+function testEditorUI() {
+  if (!testDraft) testDraft = structuredClone(data.questions);
+  const q = testDraft;
+  return `<section class="card reveal"><div class="section-head"><div><h2>🧠 ${L('testEditTitle')}</h2><p class="muted small">${L('testEditHelp')}</p></div><span>${pill(q.length + ' ' + L('questionsCount'))} ${pill(data.customTest ? L('customTest') : L('originalTest'), data.customTest ? 'amber' : 'green')}</span></div>
+    <div class="btn-row"><button class="btn primary" onclick="saveTest()">💾 ${L('saveTest')}</button><button class="btn ghost" onclick="addQuestion()">＋ ${L('addQuestion')}</button>${data.customTest ? `<button class="btn ghost" onclick="restoreTest()">↺ ${L('restoreTest')}</button>` : ''}</div></section>
+  ${q.map((x, i) => `<details class="card qedit reveal" data-k="q${i}"><summary><span class="team-no">${i + 1}</span><span class="grow">${esc(x[lang] || x.ru || '…')}</span></summary>
+    <div class="qedit-grid">
+      <label class="field"><span>ҚАЗ · ${L('question')}</span><textarea class="input" rows="2" oninput="testDraft[${i}].kk=this.value">${esc(x.kk)}</textarea></label>
+      <label class="field"><span>RU · ${L('question')}</span><textarea class="input" rows="2" oninput="testDraft[${i}].ru=this.value">${esc(x.ru)}</textarea></label>
+    </div>
+    ${x.options_ru.map((_, k) => `<div class="qopt ${x.correct === k ? 'right' : ''}"><label class="radio"><input type="radio" name="corr${i}" ${x.correct === k ? 'checked' : ''} onchange="testDraft[${i}].correct=${k};render()"> <b>${LETTERS[k]}</b> <small>${L('correctMark')}</small></label>
+      <input class="input" value="${esc(x.options_kk[k])}" placeholder="ҚАЗ" oninput="testDraft[${i}].options_kk[${k}]=this.value"><input class="input" value="${esc(x.options_ru[k])}" placeholder="RU" oninput="testDraft[${i}].options_ru[${k}]=this.value"></div>`).join('')}
+    <div class="btn-row mt">${x.options_ru.length < 5 ? `<button class="btn ghost tiny" onclick="addOption(${i})">＋ ${L('option')}</button>` : ''}${x.options_ru.length > 2 ? `<button class="btn ghost tiny" onclick="removeOption(${i})">− ${L('option')}</button>` : ''}<button class="btn soft-red tiny" onclick="removeQuestion(${i})">🗑 ${L('removeQuestion')}</button></div>
+  </details>`).join('')}`;
+}
+function addQuestion() { if (testDraft.length >= 40) return; testDraft.push({ ru: '', kk: '', options_ru: ['', '', '', '', ''], options_kk: ['', '', '', '', ''], correct: 0 }); render(); setTimeout(() => { const all = document.querySelectorAll('.qedit'); const last = all[all.length - 1]; if (last) { last.open = true; last.scrollIntoView({ behavior: 'smooth' }); } }, 50); }
+function removeQuestion(i) { if (testDraft.length <= 5 || !confirm(L('removeQuestion') + '?')) return; testDraft.splice(i, 1); render(); }
+function addOption(i) { const q = testDraft[i]; if (q.options_ru.length >= 5) return; q.options_ru.push(''); q.options_kk.push(''); render(); }
+function removeOption(i) { const q = testDraft[i]; if (q.options_ru.length <= 2) return; q.options_ru.pop(); q.options_kk.pop(); if (q.correct >= q.options_ru.length) q.correct = 0; render(); }
+async function saveTest() {
+  if (testDraft.some(q => !q.ru.trim() || !q.kk.trim() || q.options_ru.some(o => !o.trim()) || q.options_kk.some(o => !o.trim()))) { toast(L('testFill')); return; }
+  const r = await act('/supervisor/questions', { questions: testDraft }); if (r) { testDraft = null; render(); }
+}
+async function restoreTest() { if (!confirm(L('restoreTestConfirm'))) return; const r = await act('/supervisor/questions', { reset: true }); if (r) { testDraft = null; render(); } }
+function accessUI() {
+  const list = data.directors || [], link = location.origin + '/director';
+  return `<div class="split">
+    ${card('🔑 ' + L('accessTitle'), `<p class="muted">${L('accessHelp')}</p><div class="linkbox">${esc(link)}</div><button class="btn ghost small" onclick="copyText('${esc(link)}')">⧉ ${L('copyLink')}</button>
+      <form class="mt" onsubmit="createDirector(event)">${field(L('fullName'), 'dName', 'required minlength="3" maxlength="120"')}${field(L('login'), 'dLogin', 'required minlength="3" maxlength="40" autocapitalize="none" spellcheck="false"', L('loginHint'))}${field(L('password'), 'dPass', 'type="password" required minlength="8" autocomplete="new-password"', L('directorPassHint'))}<button class="btn primary" type="submit">${L('createDirector')}</button></form>`)}
+    ${card('👥 ' + L('tabAccess'), list.length ? `<ul class="attempts">${list.map(d => `<li><b>${esc(d.name)}</b> <span class="muted">${esc(d.login)}</span><small>${L('colLast')}: ${fmtDate(d.lastLoginAt)}</small><span class="row-actions"><button class="link-btn" onclick="directorAct('reset','${esc(d.login)}')">🔑 ${L('resetPassword')}</button><button class="link-btn red" onclick="directorAct('delete','${esc(d.login)}')">${L('remove')}</button></span></li>`).join('')}</ul>` : `<p class="muted">${L('noDirectors')}</p>`)}
+  </div>`;
+}
+async function createDirector(e) { e.preventDefault(); const r = await act('/supervisor/directors', { action: 'create', name: $('dName').value.trim(), login: $('dLogin').value.trim(), password: $('dPass').value }); if (r) e.target.reset(); }
+async function directorAct(action, login) {
+  const body = { action, login };
+  if (action === 'reset') { const p = prompt(L('directorReset')); if (!p) return; body.password = p; }
+  else if (!confirm(L('directorDelete'))) return;
+  await act('/supervisor/directors', body);
+}
 async function createTeacher(e) { e.preventDefault(); const r = await act('/supervisor/create-teacher', { name: $('cName').value.trim(), login: $('cLogin').value.trim(), password: $('cPass').value }); if (r) e.target.reset(); }
 async function importKeys(input) {
   const f = input.files[0]; if (!f) return;
@@ -506,15 +579,16 @@ function confetti() {
 // ---------- wiring ----------
 $('langRu').addEventListener('click', () => setLang('ru'));
 $('langKk').addEventListener('click', () => setLang('kk'));
-$('supervisorLink').addEventListener('click', openSupervisorDialog);
-$('brandLink').addEventListener('click', e => { e.preventDefault(); if (session?.role === 'teacher') go('home'); else if (session?.role === 'supervisor') { detail = null; go('teachers'); } else { classInfo = null; setUrlCode(''); render(); } });
-$('signout').addEventListener('click', async () => { try { await api('/logout', 'POST', {}); } catch {} detail = null; tab = 'home'; await load(); });
+$('supervisorLink').addEventListener('click', () => { location.href = '/director'; });
+$('brandLink').addEventListener('click', e => { e.preventDefault(); if (session?.role === 'teacher') go('home'); else if (session?.role === 'supervisor') { detail = null; go('teachers'); } else if (onDirectorPage()) location.href = '/'; else { classInfo = null; setUrlCode(''); render(); } });
+$('signout').addEventListener('click', async () => { try { await api('/logout', 'POST', {}); } catch {} detail = null; testDraft = null; tab = 'home'; if (onDirectorPage()) { location.href = '/'; return; } await load(); });
 $('dialog').addEventListener('click', e => { if (e.target === $('dialog')) closeDialog(); });
 // Keep views fresh without interrupting typing.
 setInterval(() => {
   if (document.hidden || !session || $('dialog').open) return;
   if (document.activeElement?.matches('input, textarea, select') || $('ansPhoto')?.files.length) return;
   if (session.role === 'teacher' && tab === 'test' && !data?.quiz) return;
+  if (session.role === 'supervisor' && tab === 'testedit') return;
   if (!session.role && !classInfo) return;
   load(true);
 }, 12000);

@@ -153,3 +153,60 @@ test('earlier single-cabinet data is kept and its useful parts are migrated', as
   const backup = await call('sup', '/api/supervisor/legacy-export');
   assert.equal(backup.status, 200); assert.equal(backup.data.round, 4); assert.equal(backup.data.teams[0].pin_hash, undefined);
 });
+
+test('teacher edits a team case; only the director edits the teacher test; director accounts with login and password', async t => {
+  const { call } = await launch(t);
+  assert.equal((await call('t', '/api/teacher/register', 'POST', { name: 'Айгүл Серікова', login: 'aigul', password: 'secret1' })).status, 200);
+  let me = (await call('t', '/api/teacher')).data;
+  const custom = { ru: { title: 'Мой кейс', stages: [1, 2, 3].map(i => ({ heading: 'Этап ' + i, body: 'Текст ' + i })) }, kk: { title: 'Менің кейсім', stages: [1, 2, 3].map(i => ({ heading: i + '-кезең', body: 'Мәтін ' + i })) } };
+  assert.equal((await call('t', '/api/teacher/case', 'POST', { teamId: 2, content: { ru: custom.ru } })).data.error, 'case_incomplete');
+  assert.equal((await call('t', '/api/teacher/case', 'POST', { teamId: 2, content: custom })).status, 200);
+  me = (await call('t', '/api/teacher')).data;
+  assert.equal(me.teams[1].case.kk.title, 'Менің кейсім'); assert.equal(me.teams[1].custom, true); assert.equal(me.teams[0].custom, false);
+  // teacher cannot change the test
+  assert.equal((await call('t', '/api/supervisor/questions', 'POST', { questions: [] })).status, 401);
+
+  // owner signs in with login admin, creates a director
+  assert.equal((await call('own', '/api/supervisor/login', 'POST', { login: 'admin', password: SUP })).status, 200);
+  assert.equal((await call('own', '/api/supervisor/directors', 'POST', { action: 'create', name: 'Директор колледжа', login: 'director', password: 'short' })).data.error, 'password_too_short_8');
+  assert.equal((await call('own', '/api/supervisor/directors', 'POST', { action: 'create', name: 'Директор колледжа', login: 'director', password: 'Direktor-2026' })).status, 200);
+  assert.equal((await call('own', '/api/supervisor/directors', 'POST', { action: 'create', name: 'X', login: 'admin', password: 'Direktor-2026' })).status, 409);
+  assert.equal((await call('dir', '/api/supervisor/login', 'POST', { login: 'director', password: 'wrong-pass' })).data.error, 'incorrect_login');
+  assert.equal((await call('dir', '/api/supervisor/login', 'POST', { login: 'Director', password: 'Direktor-2026' })).status, 200);
+  let dir = (await call('dir', '/api/supervisor')).data;
+  assert.equal(dir.owner, false); assert.equal(dir.actor, 'Директор колледжа'); assert.equal(dir.directors, null); assert.equal(dir.teachers.length, 1); assert.equal(dir.questions.length, 20);
+  assert.equal((await call('dir', '/api/supervisor/directors', 'POST', { action: 'create', name: 'Ещё один', login: 'other', password: 'Direktor-2026' })).status, 403);
+  assert.equal((await call('own', '/api/supervisor')).data.directors[0].login, 'director');
+
+  // director edits the test: 5 questions
+  const qs = Array.from({ length: 5 }, (_, i) => ({ ru: 'Вопрос ' + i, kk: 'Сұрақ ' + i, options_ru: ['a', 'b', 'c'], options_kk: ['а', 'ә', 'б'], correct: i % 3 }));
+  assert.equal((await call('dir', '/api/supervisor/questions', 'POST', { questions: qs.slice(0, 4) })).data.error, 'questions_count');
+  assert.equal((await call('dir', '/api/supervisor/questions', 'POST', { questions: [{ ...qs[0], kk: '' }, ...qs.slice(1)] })).data.error, 'question_incomplete');
+  assert.equal((await call('dir', '/api/supervisor/questions', 'POST', { questions: qs })).status, 200);
+  me = (await call('t', '/api/teacher')).data;
+  assert.equal(me.questions.length, 5); assert.equal(me.questions[0].correct, undefined);
+  const r = await call('t', '/api/teacher/quiz', 'POST', { answers: qs.map(q => q.correct) });
+  assert.equal(r.data.score, 5);
+  me = (await call('t', '/api/teacher')).data;
+  assert.equal(me.quiz.total, 5); assert.equal(me.quiz.level, 'high'); assert.equal(me.questions[2].ru, 'Вопрос 2');
+  // restoring the original keeps the stored result
+  assert.equal((await call('dir', '/api/supervisor/questions', 'POST', { reset: true })).status, 200);
+  assert.equal((await call('dir', '/api/supervisor')).data.questions.length, 20);
+  assert.equal((await call('t', '/api/teacher')).data.quiz.total, 5);
+
+  // students see the edited case; once submitted, it can't be changed
+  assert.equal((await call('t', '/api/teacher/open', 'POST', {})).status, 200);
+  assert.equal((await call('s', '/api/student/join', 'POST', { code: me.classCode, name: 'Ерлан', teamId: 2, pin: me.teams[1].pin })).status, 200);
+  const st = (await call('s', '/api/student')).data;
+  assert.equal(st.team.case.ru.title, 'Мой кейс');
+  assert.equal((await call('s', '/api/student/submit', 'POST', { answers: ['a', 'b', 'c'] })).status, 200);
+  assert.equal((await call('t', '/api/teacher/case', 'POST', { teamId: 2, reset: true })).data.error, 'already_submitted');
+  // director sees it; access revoked after delete / password reset
+  assert.equal((await call('dir', '/api/supervisor/teacher/' + me.id)).data.teams[1].submission.answers[0], 'a');
+  assert.equal((await call('own', '/api/supervisor/directors', 'POST', { action: 'reset', login: 'director', password: 'New-pass-2026' })).status, 200);
+  assert.equal((await call('dir', '/api/supervisor')).status, 401);
+  assert.equal((await call('dir', '/api/supervisor/login', 'POST', { login: 'director', password: 'New-pass-2026' })).status, 200);
+  assert.equal((await call('own', '/api/supervisor/directors', 'POST', { action: 'delete', login: 'director' })).status, 200);
+  assert.equal((await call('dir', '/api/supervisor')).status, 401);
+  assert.equal((await call('x', '/director')).status, 200);
+});

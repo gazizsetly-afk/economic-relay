@@ -39,7 +39,31 @@ const AES_KEY = crypto.createHash('sha256').update(SECRET).digest();
 function encrypt(text) { const iv = crypto.randomBytes(12), c = crypto.createCipheriv('aes-256-gcm', AES_KEY, iv); const body = Buffer.concat([c.update(String(text), 'utf8'), c.final()]); return [iv, c.getAuthTag(), body].map(x => x.toString('base64url')).join('.'); }
 function decrypt(s) { try { const [a, b, c] = s.split('.'); const d = crypto.createDecipheriv('aes-256-gcm', AES_KEY, Buffer.from(a, 'base64url')); d.setAuthTag(Buffer.from(b, 'base64url')); return Buffer.concat([d.update(Buffer.from(c, 'base64url')), d.final()]).toString('utf8'); } catch { return ''; } }
 const newPin = () => String(crypto.randomInt(1000, 10000));
-const level = score => score >= 18 ? 'high' : score >= 14 ? 'good' : score >= 10 ? 'basic' : 'repeat';
+const level = (score, total = 20) => { const r = score / total; return r >= 0.9 ? 'high' : r >= 0.7 ? 'good' : r >= 0.5 ? 'basic' : 'repeat'; };
+// The director may replace the teacher test; otherwise the original 20 questions are used.
+const testOf = cfg => (Array.isArray(cfg?.questions) && cfg.questions.length ? cfg.questions : QUESTIONS);
+function validateQuestions(list) {
+  if (!Array.isArray(list) || list.length < 5 || list.length > 40) err('questions_count');
+  return list.map((q, i) => {
+    const ru = clean(q?.ru, 500), kk = clean(q?.kk, 500), r = q?.options_ru, k = q?.options_kk, correct = Number(q?.correct);
+    if (!ru || !kk || !Array.isArray(r) || !Array.isArray(k) || r.length < 2 || r.length > 5 || k.length !== r.length) err('question_incomplete');
+    const options_ru = r.map(x => clean(x, 300)), options_kk = k.map(x => clean(x, 300));
+    if ([...options_ru, ...options_kk].some(x => !x) || !Number.isInteger(correct) || correct < 0 || correct >= r.length) err('question_incomplete');
+    return { id: i + 1, ru, kk, options_ru, options_kk, correct };
+  });
+}
+// A teacher may rewrite a team's case (title + 3 stages, in both languages).
+function validateCase(c) {
+  if (!c || typeof c !== 'object') err('case_incomplete');
+  const out = {};
+  for (const l of ['ru', 'kk']) {
+    const v = c[l]; if (!v || !Array.isArray(v.stages) || v.stages.length !== 3) err('case_incomplete');
+    const title = clean(v.title, 200); if (!title) err('case_incomplete');
+    const stages = v.stages.map(st => { const heading = clean(st?.heading, 200), body = clean(st?.body, 4000); if (!heading || !body) err('case_incomplete'); return { heading, body }; });
+    out[l] = { title, stages };
+  }
+  return out;
+}
 
 // ---------- key/value store: PostgreSQL or local JSON ----------
 let pool = null, local = null, localFile = '', lock = Promise.resolve();
@@ -156,7 +180,11 @@ function setAuth(res, payload) { res.setHeader('Set-Cookie', `${COOKIE}=${sign(p
 function clearAuth(res) { res.setHeader('Set-Cookie', `${COOKIE}=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0${PROD ? '; Secure' : ''}`); }
 
 function teacherOk(tok, t) { return !!t && !t.blocked && tok?.role === 'teacher' && tok.id === t.id && tok.epoch === t.epoch; }
-function supervisorOk(tok, cfg) { return tok?.role === 'supervisor' && tok.epoch === cfg.supEpoch; }
+function supervisorOk(tok, cfg) {
+  if (tok?.role !== 'supervisor') return false;
+  if (tok.kind === 'director') { const d = cfg.directors?.[tok.login]; return !!d && tok.epoch === d.epoch; }
+  return tok.epoch === cfg.supEpoch;
+}
 async function needTeacher(req) {
   const tok = readToken(req); if (tok?.role !== 'teacher') err('not_authorized', 401);
   const t = await store.get('teacher:' + tok.id); if (!teacherOk(tok, t)) err('session_expired', 401);
@@ -165,7 +193,7 @@ async function needTeacher(req) {
 async function needSupervisor(req) {
   const tok = readToken(req), cfg = await store.get('config');
   if (!supervisorOk(tok, cfg)) err('not_authorized', 401);
-  return cfg;
+  return { cfg, owner: tok.kind !== 'director', actor: tok.kind === 'director' ? cfg.directors[tok.login].name : 'admin' };
 }
 function studentOf(tok, t) {
   if (tok?.role !== 'student' || !t || t.blocked || tok.tid !== t.id || tok.round !== t.round) return null;
@@ -180,6 +208,7 @@ function makeTeams(count, old = []) {
     id: i + 1, officialId: i + 1,
     name: old[i]?.name || `Команда ${i + 1}`,
     pin: old[i]?.pin || encrypt(newPin()),
+    ...(old[i]?.custom ? { custom: old[i].custom } : {}),
     members: [], submission: null,
   }));
 }
@@ -187,26 +216,26 @@ async function uniqueClassCode(t) {
   for (let i = 0; i < 40; i++) { const code = String(crypto.randomInt(100000, 1000000)); if (await t.insert('class:' + code, { code })) return code; }
   err('server_busy', 503);
 }
-function caseContent(id) { const c = CASES.get(id); return c ? { ru: c.ru, kk: c.kk } : null; }
+function caseContent(team) { if (team.custom) return team.custom; const c = CASES.get(team.officialId); return c ? { ru: c.ru, kk: c.kk } : null; }
 function teamScore(team) { return Number.isInteger(team.submission?.score) ? team.submission.score : null; }
 function leaderboard(t) {
   return t.teams.map(x => ({ id: x.id, name: x.name, members: x.members.length, submitted: !!x.submission, score: teamScore(x) }))
     .sort((a, b) => (b.score ?? -1) - (a.score ?? -1) || a.id - b.id);
 }
-function quizPublic() { return QUESTIONS.map(q => ({ id: q.id, ru: q.ru, kk: q.kk, options_ru: q.options_ru, options_kk: q.options_kk })); }
+function quizPublic(cfg) { return testOf(cfg).map(q => ({ id: q.id, ru: q.ru, kk: q.kk, options_ru: q.options_ru, options_kk: q.options_kk })); }
 function teacherView(t, cfg, { forSupervisor = false } = {}) {
   return {
     id: t.id, name: t.name, login: t.login, createdAt: t.createdAt, lastLoginAt: t.lastLoginAt, blocked: !!t.blocked,
     classCode: t.classCode, round: t.round, phase: t.phase,
     quiz: t.quiz, attempts: t.attempts || [],
-    questions: t.quiz ? QUESTIONS : quizPublic(),
+    questions: t.quiz ? (t.quiz.questions || QUESTIONS) : quizPublic(cfg),
     teams: t.teams.map(x => ({
       id: x.id, name: x.name, officialId: x.officialId, pin: forSupervisor ? undefined : decrypt(x.pin),
-      members: x.members, case: caseContent(x.officialId),
+      members: x.members, case: caseContent(x), custom: !!x.custom,
       submission: x.submission ? { ...x.submission } : null,
     })),
     leaderboard: leaderboard(t), history: t.history || [],
-    answerKeys: cfg.answerKeys || {},
+    answerKeys: cfg.answerKeys || {}, testSize: testOf(cfg).length,
     ...(forSupervisor ? {} : { instructions: OFFICIAL.instructions }),
   };
 }
@@ -267,7 +296,7 @@ function limit(req, key, max) {
   if (rate.size > 5000) for (const [id, v] of rate) if (v.every(x => x < t - 600000)) rate.delete(id);
 }
 const STATIC = {
-  '/': ['index.html', 'text/html; charset=utf-8'], '/index.html': ['index.html', 'text/html; charset=utf-8'],
+  '/': ['index.html', 'text/html; charset=utf-8'], '/index.html': ['index.html', 'text/html; charset=utf-8'], '/director': ['index.html', 'text/html; charset=utf-8'],
   '/styles.css': ['styles.css', 'text/css; charset=utf-8'], '/app.js': ['app.js', 'text/javascript; charset=utf-8'],
   '/images/campus.webp': ['images/campus.webp', 'image/webp'],
 };
@@ -294,10 +323,17 @@ async function handle(req, res) {
   if (method === 'POST' && p === '/api/logout') { clearAuth(res); return send(res, 200, { ok: true }); }
   if (method === 'POST' && p === '/api/supervisor/login') {
     limit(req, 'sup-login', 15);
-    const b = await readBody(req, 5000), pass = clean(b.password, 300), cfg = await store.get('config');
+    const b = await readBody(req, 5000), pass = clean(b.password, 300), login = clean(b.login, 60).toLowerCase(), cfg = await store.get('config');
+    if (login && login !== 'admin') {
+      const d = cfg.directors?.[login];
+      if (!d || !pass || !verify(pass, d.passHash)) err('incorrect_login', 401);
+      await store.tx(async t => { const c = await t.get('config'); if (c.directors?.[login]) { c.directors[login].lastLoginAt = now(); await t.set('config', c); } });
+      setAuth(res, { role: 'supervisor', kind: 'director', login, epoch: d.epoch });
+      return send(res, 200, { ok: true });
+    }
     const ok = pass && ((SUPERVISOR_PASSWORD && safeSame(pass, SUPERVISOR_PASSWORD)) || (cfg.supervisorHash && verify(pass, cfg.supervisorHash)));
-    if (!ok) err('incorrect_password', 401);
-    setAuth(res, { role: 'supervisor', epoch: cfg.supEpoch });
+    if (!ok) err(login ? 'incorrect_login' : 'incorrect_password', 401);
+    setAuth(res, { role: 'supervisor', kind: 'owner', epoch: cfg.supEpoch });
     return send(res, 200, { ok: true });
   }
   if (method === 'POST' && p === '/api/teacher/register') {
@@ -347,12 +383,13 @@ async function handle(req, res) {
     if (method === 'GET' && p === '/api/teacher') { const t = await needTeacher(req), cfg = await store.get('config'); return send(res, 200, teacherView(t, cfg)); }
     if (method === 'POST' && p === '/api/teacher/quiz') {
       const b = await readBody(req, 10000);
-      return send(res, 200, await mutate(async d => {
+      return send(res, 200, await mutate(async (d, _t, cfg) => {
         if (d.quiz) err('quiz_already_done', 409);
-        if (!Array.isArray(b.answers) || b.answers.length !== QUESTIONS.length || b.answers.some((a, i) => !Number.isInteger(a) || a < 0 || a >= QUESTIONS[i].options_ru.length)) err('answer_all');
-        const score = b.answers.filter((a, i) => a === QUESTIONS[i].correct).length;
-        d.quiz = { answers: b.answers, score, total: QUESTIONS.length, level: level(score), finishedAt: now() };
-        d.attempts = [{ round: d.round, score, total: QUESTIONS.length, level: level(score), finishedAt: d.quiz.finishedAt }, ...(d.attempts || [])].slice(0, 100);
+        const qs = testOf(cfg), total = qs.length;
+        if (!Array.isArray(b.answers) || b.answers.length !== total || b.answers.some((a, i) => !Number.isInteger(a) || a < 0 || a >= qs[i].options_ru.length)) err('answer_all');
+        const score = b.answers.filter((a, i) => a === qs[i].correct).length;
+        d.quiz = { answers: b.answers, score, total, level: level(score, total), finishedAt: now(), questions: qs };
+        d.attempts = [{ round: d.round, score, total, level: level(score, total), finishedAt: d.quiz.finishedAt }, ...(d.attempts || [])].slice(0, 100);
         return { ok: true, score };
       }));
     }
@@ -375,6 +412,15 @@ async function handle(req, res) {
         return { ok: true };
       }));
     }
+    if (method === 'POST' && p === '/api/teacher/case') {
+      const b = await readBody(req, 60000), id = Number(b.teamId);
+      return send(res, 200, await mutate(async d => {
+        const team = d.teams.find(x => x.id === id); if (!team) err('not_found', 404);
+        if (team.submission) err('already_submitted', 409);
+        if (b.reset) delete team.custom; else team.custom = validateCase(b.content);
+        return { ok: true };
+      }));
+    }
     if (method === 'POST' && p === '/api/teacher/open') {
       return send(res, 200, await mutate(async d => { if (!d.quiz) err('quiz_first', 409); if (d.phase === 'open') err('invalid_phase', 409); d.phase = 'open'; d.openedAt = now(); return { ok: true }; }));
     }
@@ -384,7 +430,7 @@ async function handle(req, res) {
     if (method === 'POST' && p === '/api/teacher/new-round') {
       const b = await readBody(req, 5000); if (b.confirm !== 'NEW ROUND') err('confirm_required');
       return send(res, 200, await mutate(async (d, t) => {
-        d.history = [{ round: d.round, finishedAt: now(), quizScore: d.quiz?.score ?? null, teams: d.teams.map(x => ({ name: x.name, officialId: x.officialId, members: x.members.map(m => m.name), score: teamScore(x), rubric: x.submission?.rubric || null, feedback: x.submission?.feedback || '', answers: x.submission?.answers || null })) }, ...(d.history || [])].slice(0, 30);
+        d.history = [{ round: d.round, finishedAt: now(), quizScore: d.quiz?.score ?? null, teams: d.teams.map(x => ({ name: x.name, officialId: x.officialId, title: caseContent(x)?.ru.title || '', custom: !!x.custom, members: x.members.map(m => m.name), score: teamScore(x), rubric: x.submission?.rubric || null, feedback: x.submission?.feedback || '', answers: x.submission?.answers || null })) }, ...(d.history || [])].slice(0, 30);
         await t.delPrefix(`photo:${d.id}:`);
         d.round++; d.phase = 'setup'; d.quiz = null;
         for (const x of d.teams) { x.members = []; x.submission = null; }
@@ -423,7 +469,7 @@ async function handle(req, res) {
       const d = await needTeacher(req);
       return csv(res, `class-${d.classCode}-round-${d.round}.csv`, [
         ['Команда', 'Кейс', 'Участники', 'Этап 1 (10)', 'Этап 2 (15)', 'Этап 3 (15)', 'Защита (10)', 'Итого (50)', 'Комментарий', 'Ответ: этап 1', 'Ответ: этап 2', 'Ответ: этап 3'],
-        ...d.teams.map(x => [x.name, CASES.get(x.officialId)?.ru.title || '', x.members.map(m => m.name).join('; '), x.submission?.rubric?.analysis ?? '', x.submission?.rubric?.calculation ?? '', x.submission?.rubric?.decision ?? '', x.submission?.rubric?.defense ?? '', teamScore(x) ?? '', x.submission?.feedback || '', ...(x.submission?.answers || ['', '', ''])]),
+        ...d.teams.map(x => [x.name, caseContent(x)?.ru.title || '', x.members.map(m => m.name).join('; '), x.submission?.rubric?.analysis ?? '', x.submission?.rubric?.calculation ?? '', x.submission?.rubric?.decision ?? '', x.submission?.rubric?.defense ?? '', teamScore(x) ?? '', x.submission?.feedback || '', ...(x.submission?.answers || ['', '', ''])]),
       ]);
     }
     return err('not_found', 404);
@@ -431,10 +477,11 @@ async function handle(req, res) {
 
   // ----- supervisor -----
   if (p.startsWith('/api/supervisor')) {
-    const cfg = await needSupervisor(req);
+    const { cfg, owner, actor } = await needSupervisor(req);
     if (method === 'GET' && p === '/api/supervisor') {
       const teachers = (await store.list('teacher:')).map(teacherSummary).sort((a, b) => a.name.localeCompare(b.name));
-      return send(res, 200, { teachers, regCode: cfg.regCode, answerKeyCount: Object.keys(cfg.answerKeys || {}).length, legacyAttempts: cfg.legacyAttempts || [], hasLegacy: !!cfg.hasLegacy, storage: pool ? 'postgres' : 'local' });
+      const directors = owner ? Object.values(cfg.directors || {}).map(d => ({ login: d.login, name: d.name, createdAt: d.createdAt, lastLoginAt: d.lastLoginAt || null })) : null;
+      return send(res, 200, { teachers, owner, actor, directors, questions: testOf(cfg), customTest: Array.isArray(cfg.questions) && cfg.questions.length > 0, regCode: cfg.regCode, answerKeyCount: Object.keys(cfg.answerKeys || {}).length, legacyAttempts: cfg.legacyAttempts || [], hasLegacy: !!cfg.hasLegacy, storage: pool ? 'postgres' : 'local' });
     }
     const one = /^\/api\/supervisor\/teacher\/(\d+)$/.exec(p);
     if (method === 'GET' && one) { const t = await store.get('teacher:' + one[1]); if (!t) err('not_found', 404); return send(res, 200, teacherView(t, cfg, { forSupervisor: true })); }
@@ -465,6 +512,31 @@ async function handle(req, res) {
         await t.set('teacher:' + tid, { id: tid, name, login, passHash: hash(pass), epoch: 1, createdAt: now(), lastLoginAt: null, blocked: false, classCode, round: 1, phase: 'setup', quiz: null, attempts: [], teams: makeTeams(7), nextMemberId: 1, history: [] });
         await t.set('config', c);
         return { ok: true, id: tid };
+      }));
+    }
+    if (method === 'POST' && p === '/api/supervisor/questions') {
+      const b = await readBody(req, 300000), qs = b.reset ? null : validateQuestions(b.questions);
+      return send(res, 200, await store.tx(async t => { const c = await t.get('config'); if (qs) c.questions = qs; else delete c.questions; c.questionsUpdatedAt = now(); await t.set('config', c); return { ok: true }; }));
+    }
+    if (method === 'POST' && p === '/api/supervisor/directors') {
+      if (!owner) err('owner_only', 403);
+      const b = await readBody(req, 5000), login = validLogin(b.login);
+      if (login === 'admin') err('login_taken', 409);
+      return send(res, 200, await store.tx(async t => {
+        const c = await t.get('config'); c.directors = c.directors || {};
+        const d = c.directors[login];
+        if (b.action === 'create') {
+          const name = clean(b.name, 120), pass = clean(b.password, 200);
+          if (name.length < 3) err('name_required'); if (pass.length < 8) err('password_too_short_8');
+          if (d) err('login_taken', 409);
+          c.directors[login] = { login, name, passHash: hash(pass), epoch: 1, createdAt: now() };
+        } else if (b.action === 'reset') {
+          const pass = clean(b.password, 200); if (!d) err('not_found', 404); if (pass.length < 8) err('password_too_short_8');
+          d.passHash = hash(pass); d.epoch++;
+        } else if (b.action === 'delete') { if (!d) err('not_found', 404); delete c.directors[login]; }
+        else err('invalid_action');
+        await t.set('config', c);
+        return { ok: true };
       }));
     }
     if (method === 'POST' && p === '/api/supervisor/settings') {
@@ -525,7 +597,7 @@ async function handle(req, res) {
   if (method === 'GET' && p === '/api/student') {
     const tok = readToken(req), t = tok?.role === 'student' ? await store.get('teacher:' + tok.tid) : null, me = studentOf(tok, t);
     if (!me) err('session_expired', 401);
-    return send(res, 200, { phase: t.phase, teacher: t.name, classCode: t.classCode, tid: t.id, team: { id: me.team.id, name: me.team.name, officialId: me.team.officialId, case: caseContent(me.team.officialId), submission: me.team.submission, members: me.team.members }, me: me.m, instructions: OFFICIAL.instructions, leaderboard: leaderboard(t) });
+    return send(res, 200, { phase: t.phase, teacher: t.name, classCode: t.classCode, tid: t.id, team: { id: me.team.id, name: me.team.name, officialId: me.team.officialId, case: caseContent(me.team), custom: !!me.team.custom, submission: me.team.submission, members: me.team.members }, me: me.m, instructions: OFFICIAL.instructions, leaderboard: leaderboard(t) });
   }
   if (method === 'POST' && p === '/api/student/submit') {
     const b = await readBody(req), tok = readToken(req);

@@ -12,6 +12,10 @@ A bilingual (Kazakh / Russian) web app for a college economics competition.
 
 The teacher's cases only open after that teacher has finished the test for the current lesson.
 
+- A teacher can **edit the case** of any of their teams (title + 3 stages, KK and RU) until that team submits, and restore the original. Jury model answers are not shown for edited cases.
+- Only the **director** can change the teacher test (Director → Teacher test): 5–40 questions, 2–5 options each, both languages. Results already taken keep the questions they were taken with.
+- **Director page:** `/director`. The main administrator signs in there with login `admin` and the `TEACHER_PASSWORD`; under **Director access** they create logins and passwords for the director or other inspectors. Those accounts see all teachers, students and grades and can edit the test, but cannot manage other director accounts.
+
 ## Content (unchanged)
 
 - `teacher-test.json` — the 20 bilingual five-choice questions and answer key (answers are sent to a teacher only after they finish).
