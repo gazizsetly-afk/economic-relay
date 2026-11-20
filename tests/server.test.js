@@ -90,11 +90,17 @@ test('two teachers with their own accounts, classes, quiz and students; supervis
   const info = (await call('s1', '/api/class/' + a.classCode)).data;
   assert.equal(info.teacher, 'Айгүл Серікова'); assert.equal(info.teams.length, 10);
   assert.equal((await call('s1', '/api/class/000000')).status, 404);
-  assert.equal((await call('s1', '/api/student/join', 'POST', { code: a.classCode, name: 'Алия', teamId: 1, pin: '0' })).status, 401);
+  assert.equal((await call('s1', '/api/student/join', 'POST', { code: a.classCode, name: 'Алия', teamId: 99 })).data.error, 'team_required');
+  assert.equal((await call('s1', '/api/student/join', 'POST', { code: a.classCode, name: 'А', teamId: 1 })).data.error, 'name_required');
   assert.equal((await call('s1', '/api/student/join', 'POST', { code: b.classCode, name: 'Алия', teamId: 1, pin: a.teams[0].pin })).status, 403, 'other teacher class is still closed');
   assert.equal((await call('s1', '/api/student/join', 'POST', { code: a.classCode, name: 'Алия', teamId: 1, pin: a.teams[0].pin })).data.captain, true);
   assert.equal((await call('s2', '/api/student/join', 'POST', { code: a.classCode, name: 'Бекзат', teamId: 1, pin: a.teams[0].pin })).data.captain, false);
-  assert.equal((await call('s2', '/api/student/join', 'POST', { code: a.classCode, name: 'алия', teamId: 1, pin: a.teams[0].pin })).data.error, 'name_taken');
+  // no PIN needed; same name again = same member (e.g. another phone); same name in another team is refused
+  const again = (await call('s3', '/api/student/join', 'POST', { code: a.classCode, name: 'алия', teamId: 1 })).data;
+  assert.equal(again.again, true); assert.equal(again.captain, true);
+  assert.equal((await call('s3', '/api/student')).data.me.name, 'Алия');
+  assert.equal((await call('s4', '/api/student/join', 'POST', { code: a.classCode, name: 'Алия', teamId: 2 })).data.error, 'name_in_other_team');
+  assert.equal((await call('s1', '/api/teacher')).status, 401);
   let me = (await call('s1', '/api/student')).data;
   assert.equal(me.team.case.kk.stages.length, 3); assert.equal(me.teacher, 'Айгүл Серікова');
   assert.ok(!JSON.stringify(me).includes('Расчёт 1'), 'no jury keys for students');

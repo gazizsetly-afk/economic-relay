@@ -308,3 +308,12 @@ textarea.input{resize:vertical;line-height:1.55}
 .add-teacher summary{list-style:none;display:inline-flex}.add-teacher summary::-webkit-details-marker{display:none}.add-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:12px;align-items:start}.add-grid .btn{margin-top:24px}@media (max-width:900px){.add-grid{grid-template-columns:1fr}.add-grid .btn{margin-top:0}}
 
 .next-step{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:16px;border-radius:18px;background:linear-gradient(135deg,#e7faf6,#f1efff);margin-bottom:16px}.next-step p{margin:4px 0 0}
+
+/* student fast join */
+.team-pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:6px}
+.team-pick button{display:flex;align-items:center;gap:10px;border:1.5px solid var(--line);background:#fff;border-radius:16px;padding:14px;font-weight:800;font-size:15px;text-align:left;transition:transform .2s,border-color .2s,box-shadow .2s}
+.team-pick button:hover,.team-pick button:active{border-color:var(--violet);transform:translateY(-2px);box-shadow:0 8px 20px #6a55e826}
+.picked{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:#f1efff;margin-bottom:14px}
+.picked b{display:block;font-size:17px}
+.btn.big{padding:16px 20px;font-size:16px}
+.team-qr-btn{margin:10px 0 4px}

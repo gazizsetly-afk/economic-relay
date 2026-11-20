@@ -40,7 +40,7 @@ const S = {
   classOf: ['Класс преподавателя', 'Мұғалімнің сыныбы'], waitTitle: ['Задания ещё закрыты', 'Тапсырмалар әлі жабық'], waitText: ['Преподаватель откроет задания после теста. Страница обновится сама.', 'Мұғалім тесттен кейін тапсырмаларды ашады. Бет өзі жаңарады.'],
   closedTitle: ['Приём ответов завершён', 'Жауап қабылдау аяқталды'], joinTitle: ['Вход в команду', 'Командаға кіру'],
   yourName: ['Ваше имя и фамилия', 'Аты-жөніңіз'], team: ['Команда', 'Команда'], teamPin: ['PIN-код команды', 'Команда PIN-коды'], join: ['Войти в команду', 'Командаға кіру'],
-  joinHelp: ['Первый вошедший становится капитаном — только он отправляет общий ответ.', 'Бірінші кірген капитан болады — ортақ жауапты тек ол жібереді.'],
+  joinHelp: ['Первый вошедший становится капитаном — только он отправляет общий ответ.', 'Бірінші кірген капитан болады — ортақ жауапты тек ол жібереді.'], pickTeam: ['Нажмите на свою команду', 'Командаңызды басыңыз'], changeTeam: ['Другая команда', 'Басқа команда'], yourTeamIs: ['Ваша команда', 'Сіздің командаңыз'], joinGo: ['Войти', 'Кіру'], welcomeBack: ['С возвращением! Вы снова в своей команде.', 'Қош келдіңіз! Сіз қайтадан командаңыздасыз.'],
   otherCode: ['Другой код', 'Басқа код'], captain: ['Капитан', 'Капитан'], member: ['Участник', 'Қатысушы'], members: ['Участники', 'Қатысушылар'],
   yourCase: ['Кейс вашей команды', 'Командаңыздың кейсі'], stage: ['Этап', 'Кезең'],
   answerStage: ['Ответ: этап', 'Жауап: кезең'], photoOpt: ['Фото письменной работы или плаката (необязательно, JPG/PNG/WebP до 2,7 МБ)', 'Жазбаша жұмыстың немесе плакаттың фотосы (міндетті емес, JPG/PNG/WebP, 2,7 МБ дейін)'],
@@ -57,8 +57,8 @@ const S = {
   hello: ['Здравствуйте', 'Сәлеметсіз бе'], tabHome: ['Главная', 'Басты'], tabTest: ['Тест', 'Тест'], tabTeams: ['Команды', 'Командалар'], tabGrade: ['Оценки', 'Бағалау'], tabProfile: ['Профиль', 'Профиль'],
   lesson: ['Занятие', 'Сабақ'], phase_setup: ['Подготовка', 'Дайындық'], phase_open: ['Задания открыты', 'Тапсырмалар ашық'], phase_closed: ['Приём закрыт', 'Қабылдау жабық'],
   step1: ['Пройдите тест', 'Тест тапсырыңыз'], step1t: ['Тест по экономике и финансовой грамотности. Без теста задания не откроются.', 'Экономика және қаржылық сауаттылық бойынша тест. Тестсіз тапсырмалар ашылмайды.'],
-  step2: ['Подготовьте команды', 'Командаларды дайындаңыз'], step2t: ['Выберите количество команд (2–20), при желании измените задания и раздайте PIN-коды.', 'Командалар санын таңдап (2–20), қажет болса тапсырмаларды өзгертіп, PIN-кодтарды беріңіз.'],
-  step3: ['Откройте задания', 'Тапсырмаларды ашыңыз'], step3t: ['Студенты входят по коду класса или QR, выбирают команду и вводят PIN.', 'Студенттер сынып коды не QR арқылы кіріп, команданы таңдап, PIN енгізеді.'],
+  step2: ['Подготовьте команды', 'Командаларды дайындаңыз'], step2t: ['Выберите количество команд (2–20) и при желании измените задания. QR команд можно распечатать и положить на столы.', 'Командалар санын таңдап (2–20), қажет болса тапсырмаларды өзгертіңіз. Команда QR-ларын басып шығарып, үстелге қоюға болады.'],
+  step3: ['Откройте задания', 'Тапсырмаларды ашыңыз'], step3t: ['Студенты сканируют QR класса или команды, пишут только имя — и они в команде.', 'Студенттер сынып не команда QR-ын сканерлеп, тек атын жазады — болды, командада.'],
   step4: ['Оцените команды', 'Командаларды бағалаңыз'], step4t: ['50 баллов: этапы 10 + 15 + 15 и устная защита 10.', '50 балл: кезеңдер 10 + 15 + 15 және ауызша қорғау 10.'],
   takeTest: ['Пройти тест', 'Тест тапсыру'], testDone: ['Тест пройден', 'Тест тапсырылды'], openTasks: ['Открыть задания студентам', 'Студенттерге тапсырма ашу'], closeTasks: ['Закрыть приём ответов', 'Жауап қабылдауды жабу'], reopen: ['Открыть снова', 'Қайта ашу'],
   goTeams: ['Открыть команды', 'Командаларды ашу'], goGrade: ['К оценкам', 'Бағалауға өту'],
@@ -71,7 +71,7 @@ const S = {
   correctAnswer: ['Правильный ответ', 'Дұрыс жауап'], yourChoice: ['Ваш ответ', 'Сіздің жауабыңыз'], sec1: ['Основы экономики', 'Экономика негіздері'], sec2: ['Финансовая грамотность', 'Қаржылық сауаттылық'], sec3: ['Практика и рынок', 'Тәжірибе және нарық'],
   teamCount: ['Количество команд', 'Командалар саны'], teamCountHelp: ['Выберите от 2 до 20 команд. Можно менять, пока задания не открыты и в командах никого нет.', '2-ден 20-ға дейін команда таңдаңыз. Тапсырмалар ашылмай, командаларда ешкім болмаса ғана өзгертуге болады.'], casesRepeat: ['В документе 10 кейсов: команды после 10-й получают их по кругу (11-я — кейс 1 и т. д.). Любое задание можно изменить кнопкой «Изменить задание».', 'Құжатта 10 кейс бар: 10-нан кейінгі командаларға олар қайта беріледі (11-ші — 1-кейс т.с.с.). Кез келген тапсырманы «Тапсырманы өзгерту» батырмасымен өзгертуге болады.'], err_team_count: ['Количество команд — от 2 до 20.', 'Командалар саны 2-ден 20-ға дейін.'], apply: ['Применить', 'Қолдану'],
   teamName: ['Название', 'Атауы'], pin: ['PIN', 'PIN'], newPin: ['Новый PIN', 'Жаңа PIN'], makeCaptain: ['Сделать капитаном', 'Капитан ету'], remove: ['Удалить', 'Өшіру'], noMembers: ['Пока никого нет', 'Әзірге ешкім жоқ'],
-  printPins: ['Распечатать PIN-коды', 'PIN-кодтарды басып шығару'],
+  printPins: ['Распечатать QR команд', 'Команда QR-ларын басып шығару'], teamQr: ['QR команды', 'Команда QR-ы'], teamQrHelp: ['Студент сканирует — сразу открывается вход в эту команду, нужно только написать имя.', 'Студент сканерлейді — бірден осы командаға кіру ашылады, тек атын жазу керек.'], teamQrCard: ['Отсканируйте и напишите своё имя', 'Сканерлеп, атыңызды жазыңыз'],
   gradeTitle: ['Ответы команд и оценка жюри', 'Команда жауаптары және қазылар бағасы'], noAnswer: ['Ответа пока нет', 'Әзірге жауап жоқ'], judgeKey: ['Образец ответа для жюри', 'Қазыларға арналған үлгі жауап'],
   r_analysis: ['Этап 1 · анализ', '1-кезең · талдау'], r_calculation: ['Этап 2 · расчёт', '2-кезең · есептеу'], r_decision: ['Этап 3 · решение', '3-кезең · шешім'], r_defense: ['Устная защита и плакат', 'Ауызша қорғау және плакат'],
   saveGrade: ['Сохранить оценку', 'Бағаны сақтау'], rubricFill: ['Заполните все четыре оценки в пределах максимума.', 'Төрт бағаны да шегінде толтырыңыз.'], total: ['Итого', 'Барлығы'],
@@ -102,7 +102,7 @@ const S = {
   err_login_taken: ['Такой логин уже занят.', 'Бұл логин бос емес.'], err_login_format: ['Логин: латиница, цифры, . _ - @ (3–40 символов).', 'Логин: латын әріптері, сандар, . _ - @ (3–40 таңба).'],
   err_password_too_short: ['Пароль — минимум 6 символов.', 'Құпиясөз кемі 6 таңба.'], err_name_required: ['Введите имя полностью.', 'Аты-жөніңізді толық енгізіңіз.'], err_invalid_reg_code: ['Неверный код регистрации.', 'Тіркелу коды қате.'],
   err_class_not_found: ['Класс с таким кодом не найден.', 'Мұндай кодпен сынып табылмады.'], err_not_open: ['Задания ещё не открыты.', 'Тапсырмалар әлі ашылмаған.'], err_invalid_team_code: ['Неверный PIN команды.', 'Команда PIN-коды қате.'],
-  err_name_taken: ['Это имя уже есть в команде.', 'Бұл есім командада бар.'], err_captain_only: ['Отправить ответ может только капитан.', 'Жауапты тек капитан жібере алады.'], err_already_submitted: ['Ответ уже отправлен.', 'Жауап жіберіліп қойған.'],
+  err_name_taken: ['Это имя уже есть в команде.', 'Бұл есім командада бар.'], err_name_in_other_team: ['Это имя уже есть в другой команде. Добавьте фамилию.', 'Бұл есім басқа командада бар. Тегіңізді қосыңыз.'], err_team_required: ['Выберите команду.', 'Команданы таңдаңыз.'], err_captain_only: ['Отправить ответ может только капитан.', 'Жауапты тек капитан жібере алады.'], err_already_submitted: ['Ответ уже отправлен.', 'Жауап жіберіліп қойған.'],
   err_empty_answer: ['Ответ пустой.', 'Жауап бос.'], err_image_too_large: ['Фото слишком большое (до 2,7 МБ, JPG/PNG/WebP).', 'Фото тым үлкен (2,7 МБ дейін, JPG/PNG/WebP).'], err_invalid_image: ['Неподдерживаемый формат фото.', 'Фото форматы қолдау көрмейді.'],
   err_quiz_first: ['Сначала пройдите тест.', 'Алдымен тест тапсырыңыз.'], err_quiz_already_done: ['Тест уже пройден в этом занятии.', 'Бұл сабақта тест тапсырылған.'], err_answer_all: ['Ответьте на все вопросы.', 'Барлық сұраққа жауап беріңіз.'],
   err_setup_only: ['Можно только до открытия заданий.', 'Тек тапсырма ашылғанға дейін.'], err_existing_responses: ['В командах уже есть студенты.', 'Командаларда студенттер бар.'], err_rubric_range: ['Проверьте баллы по критериям.', 'Критерий ұпайларын тексеріңіз.'],
@@ -136,6 +136,7 @@ async function act(url, body, okMsg = L('saved')) {
 }
 function setLang(code) { lang = code; try { localStorage.setItem('economic-relay.lang', code); } catch {} render(true); }
 const onDirectorPage = () => location.pathname === '/director';
+let pickedTeam = (() => { const v = Number(new URLSearchParams(location.search).get('team')); return Number.isInteger(v) && v > 0 ? v : 0; })();
 function urlCode() { const c = new URLSearchParams(location.search).get('c'); return /^\d{6}$/.test(c || '') ? c : ''; }
 function setUrlCode(code) { const u = new URL(location.href); if (code) u.searchParams.set('c', code); else u.searchParams.delete('c'); history.replaceState(null, '', u); }
 
@@ -262,22 +263,32 @@ function classUI() {
   if (c.error) return card('', `<p class="note bad">${errText(c.error)}</p><button class="btn ghost" onclick="leaveClass()">← ${L('otherCode')}</button>`, 'narrow');
   let body;
   if (c.phase === 'open') {
-    body = `<form onsubmit="joinTeam(event)">
-      ${field(L('yourName'), 'jName', 'required minlength="2" maxlength="90" autocomplete="name"')}
-      <label class="field"><span>${L('team')}</span><select class="input" id="jTeam" required><option value="">—</option>${c.teams.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('')}</select></label>
-      ${field(L('teamPin'), 'jPin', 'inputmode="numeric" required maxlength="10" autocomplete="off"')}
-      <p class="muted small">★ ${L('joinHelp')}</p>
-      <button class="btn primary full" type="submit">${L('join')} →</button></form>`;
+    const team = c.teams.find(t => t.id === pickedTeam);
+    let saved = ''; try { saved = localStorage.getItem('economic-relay.name') || ''; } catch {}
+    body = team
+      ? `<div class="picked"><span class="team-no">${team.id}</span><div class="grow"><small class="muted">${L('yourTeamIs')}</small><b>${esc(team.name)}</b></div><button type="button" class="link-btn" onclick="pickTeam(0)">${L('changeTeam')}</button></div>
+        <form onsubmit="joinTeam(event)">${field(L('yourName'), 'jName', `required minlength="2" maxlength="90" autocomplete="name" value="${esc(saved)}"`)}
+        <p class="muted small">★ ${L('joinHelp')}</p><button class="btn primary full big" type="submit">${L('joinGo')} →</button></form>`
+      : `<p class="muted">${L('pickTeam')}</p><div class="team-pick">${c.teams.map(t => `<button type="button" onclick="pickTeam(${t.id})"><span class="team-no">${t.id}</span>${esc(t.name)}</button>`).join('')}</div>`;
   } else {
     body = `<div class="wait"><div class="pulse-ring">${c.phase === 'closed' ? '🏁' : '⏳'}</div><h3>${c.phase === 'closed' ? L('closedTitle') : L('waitTitle')}</h3>${c.phase === 'setup' ? `<p class="muted">${L('waitText')}</p>` : ''}</div>`;
   }
   return `<div class="split">${card(`<span class="muted small block">${L('classOf')} · ${esc(c.code)}</span>👩‍🏫 ${esc(c.teacher)}`, `${phasePill(c.phase)}<h3 class="mt">${L('joinTitle')}</h3>${body}<button class="link-btn" type="button" onclick="leaveClass()">← ${L('otherCode')}</button>`, 'narrow')}${c.phase !== 'setup' ? rankingCard(c.leaderboard) : ''}</div>`;
 }
-function leaveClass() { classInfo = null; setUrlCode(''); render(); }
+function leaveClass() { classInfo = null; pickedTeam = 0; setUrlCode(''); const u = new URL(location.href); u.searchParams.delete('team'); history.replaceState(null, '', u); render(); }
+function pickTeam(id) {
+  pickedTeam = id;
+  const u = new URL(location.href); if (id) u.searchParams.set('team', id); else u.searchParams.delete('team'); history.replaceState(null, '', u);
+  render(); if (id) setTimeout(() => { const el = $('jName'); if (el) { el.focus(); el.select(); } }, 60);
+}
 async function joinTeam(e) {
   e.preventDefault();
-  try { await api('/student/join', 'POST', { code: classInfo.code, name: $('jName').value.trim(), teamId: Number($('jTeam').value), pin: $('jPin').value.trim() }); await load(); }
-  catch (ex) { toast(errText(ex.message)); }
+  const name = $('jName').value.trim().replace(/\s+/g, ' ');
+  try {
+    const r = await api('/student/join', 'POST', { code: classInfo.code, name, teamId: pickedTeam });
+    try { localStorage.setItem('economic-relay.name', name); } catch {}
+    pickedTeam = 0; await load(); if (r.again) toast(L('welcomeBack'));
+  } catch (ex) { toast(errText(ex.message)); }
 }
 function rankingCard(list) {
   const rows = (list || []).map((t, i) => `<div class="rank-row ${t.score != null && i < 3 ? 'top' + (i + 1) : ''}"><span class="rank-pos">${t.score != null ? (['🥇', '🥈', '🥉'][i] || i + 1) : '·'}</span><span class="rank-name">${esc(t.name)}<small>${t.members} 👤 ${t.submitted ? '· ✓' : ''}</small></span><b>${t.score ?? '—'}<small>/50</small></b></div>`).join('');
@@ -412,7 +423,7 @@ function teamsUI() {
     <div class="team-head"><span class="team-no">${t.id}</span><input class="input bare" value="${esc(t.name)}" maxlength="60" onchange="renameTeam(${t.id}, this.value)" aria-label="${L('teamName')}"></div>
     <p class="muted small">📚 ${esc(c?.title || '')} ${t.custom ? pill('✏ ' + L('edited'), 'amber') : ''}</p>
     ${t.submission ? '' : `<button class="btn ghost tiny mb" onclick="openCaseEditor(${t.id})">✏ ${L('editCase')}</button>`}
-    <div class="pin-row"><span>${L('pin')}</span><b class="pin">${esc(t.pin)}</b><button class="btn ghost tiny" onclick="newPin(${t.id})">↻ ${L('newPin')}</button></div>
+    <button class="btn ghost small team-qr-btn" onclick="showTeamQr(${t.id})">▦ ${L('teamQr')}</button>
     <h4>${L('members')} (${t.members.length})</h4>
     ${t.members.length ? `<ul class="member-list">${t.members.map(m => `<li>${m.isCaptain ? '★' : '•'} ${esc(m.name)} <span class="row-actions">${m.isCaptain ? '' : `<button class="link-btn" onclick="memberAct(${t.id},${m.id},'captain')">${L('makeCaptain')}</button>`}<button class="link-btn red" onclick="memberAct(${t.id},${m.id},'remove')">${L('remove')}</button></span></li>`).join('')}</ul>` : `<p class="muted small">${L('noMembers')}</p>`}
     ${t.submission ? pill('✓ ' + L('statSubmitted'), 'green') : ''}
@@ -443,9 +454,14 @@ async function saveCase(id) {
   const r = await act('/teacher/case', { teamId: id, content }); if (r) closeDialog();
 }
 async function resetCase(id) { if (!confirm(L('restoreConfirm'))) return; const r = await act('/teacher/case', { teamId: id, reset: true }); if (r) closeDialog(); }
+const teamLink = id => location.origin + '/?c=' + data.classCode + '&team=' + id;
+function showTeamQr(id) {
+  const t = data.teams.find(x => x.id === id), link = teamLink(id);
+  dialog(`<h2>▦ ${L('teamQr')}: ${esc(t.name)}</h2><div class="center-card"><img class="qr" src="/api/qr?c=${esc(data.classCode)}&team=${id}" alt="QR" width="240" height="240"></div><p class="muted small">${L('teamQrHelp')}</p><div class="linkbox">${esc(link)}</div><div class="btn-row"><button class="btn ghost small" onclick="copyText('${esc(link)}')">⧉ ${L('copyLink')}</button></div>`);
+}
 function printPins() {
   const w = window.open('', '_blank'); if (!w) return;
-  w.document.write(`<!doctype html><meta charset="utf-8"><title>PIN</title><style>body{font-family:system-ui,sans-serif;display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:20px}div{border:2px dashed #555;border-radius:12px;padding:18px}h2{margin:0 0 6px}b{font-size:30px;letter-spacing:4px}</style>${data.teams.map(t => `<div><h2>${esc(t.name)}</h2><p>${L('classCode')}: <b>${esc(data.classCode)}</b></p><p>${L('pin')}: <b>${esc(t.pin)}</b></p><small>${esc(location.origin)}</small></div>`).join('')}<script>print()<\/script>`);
+  w.document.write(`<!doctype html><meta charset="utf-8"><title>QR</title><style>body{font-family:system-ui,sans-serif;display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px;margin:0}div{border:2px dashed #555;border-radius:14px;padding:14px;text-align:center;break-inside:avoid}h2{margin:0 0 6px;font-size:22px}img{width:180px;height:180px}p{margin:6px 0 0;font-size:13px}</style>${data.teams.map(t => `<div><h2>${esc(t.name)}</h2><img src="${location.origin}/api/qr?c=${esc(data.classCode)}&team=${t.id}"><p>${L('teamQrCard')}</p></div>`).join('')}<script>Promise.all([...document.images].map(i=>i.complete?1:new Promise(r=>{i.onload=i.onerror=r}))).then(()=>print())<\/script>`);
   w.document.close();
 }
 

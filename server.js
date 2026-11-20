@@ -627,7 +627,8 @@ async function handle(req, res) {
   }
   if (method === 'POST' && p === '/api/student/join') {
     limit(req, 'join', 200);
-    const b = await readBody(req, 5000), code = clean(b.code, 6), name = clean(b.name, 90), teamId = Number(b.teamId), pin = clean(b.pin, 20);
+    // No PIN: students come through the teacher's class link or a team QR and only type their name.
+    const b = await readBody(req, 5000), code = clean(b.code, 6), name = clean(b.name, 90).replace(/\s+/g, ' '), teamId = Number(b.teamId);
     if (name.length < 2) err('name_required');
     const ref = /^\d{6}$/.test(code) ? await store.get('class:' + code) : null;
     if (!ref?.id) err('class_not_found', 404);
@@ -636,15 +637,19 @@ async function handle(req, res) {
       if (!d || d.blocked) err('class_not_found', 404);
       if (d.phase !== 'open') err('not_open', 403);
       const team = d.teams.find(x => x.id === teamId);
-      if (!team || !pin || decrypt(team.pin) !== pin) err('invalid_team_code', 401);
-      if (team.members.some(m => m.name.toLocaleLowerCase() === name.toLocaleLowerCase())) err('name_taken', 409);
+      if (!team) err('team_required', 400);
+      // Same name again in the same team (another phone, closed tab): continue as that member.
+      const again = team.members.find(m => m.name.toLocaleLowerCase() === name.toLocaleLowerCase());
+      if (again) return { tid: d.id, round: d.round, teamId: team.id, memberId: again.id, captain: !!again.isCaptain, again: true };
+      const elsewhere = d.teams.find(x => x !== team && x.members.some(m => m.name.toLocaleLowerCase() === name.toLocaleLowerCase()));
+      if (elsewhere) err('name_in_other_team', 409);
       const m = { id: d.nextMemberId++, name, isCaptain: team.members.length === 0, joinedAt: now() };
       team.members.push(m);
       await t.set('teacher:' + d.id, d);
       return { tid: d.id, round: d.round, teamId: team.id, memberId: m.id, captain: m.isCaptain };
     });
     setAuth(res, { role: 'student', tid: out.tid, round: out.round, teamId: out.teamId, memberId: out.memberId });
-    return send(res, 200, { ok: true, captain: out.captain });
+    return send(res, 200, { ok: true, captain: out.captain, again: !!out.again });
   }
   if (method === 'GET' && p === '/api/student') {
     const tok = readToken(req), t = tok?.role === 'student' ? await store.get('teacher:' + tok.tid) : null, me = studentOf(tok, t);
@@ -685,7 +690,8 @@ async function handle(req, res) {
     const code = /^\d{6}$/.test(url.searchParams.get('c') || '') ? url.searchParams.get('c') : '';
     const tk = TOKEN_RE.test(url.searchParams.get('t') || '') ? url.searchParams.get('t') : '';
     const qr = require('qrcode');
-    const png = await qr.toBuffer(originOf(req) + (tk ? '/t/' + tk : code ? '/?c=' + code : ''), { type: 'png', width: 420, margin: 2, color: { dark: '#1f1b5cff', light: '#ffffffff' } });
+    const team = /^([1-9]|1\d|20)$/.test(url.searchParams.get('team') || '') ? url.searchParams.get('team') : '';
+    const png = await qr.toBuffer(originOf(req) + (tk ? '/t/' + tk : code ? '/?c=' + code + (team ? '&team=' + team : '') : ''), { type: 'png', width: 420, margin: 2, color: { dark: '#1f1b5cff', light: '#ffffffff' } });
     res.writeHead(200, { 'Content-Type': 'image/png', 'Cache-Control': 'public,max-age=300' });
     return res.end(png);
   }
