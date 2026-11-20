@@ -80,19 +80,21 @@ const store = {
   },
   // Runs fn atomically. t.get locks the row; t.set / t.del / t.insert are applied on commit.
   async tx(fn) {
+    const changed = new Set();
     if (pool) {
       const c = await pool.connect();
       try {
         await c.query('BEGIN');
         const t = {
           async get(k) { const r = await c.query('SELECT v FROM relay_kv WHERE k=$1 FOR UPDATE', [k]); return r.rows[0]?.v ?? null; },
-          async set(k, v) { await c.query('INSERT INTO relay_kv(k,v) VALUES($1,$2) ON CONFLICT(k) DO UPDATE SET v=EXCLUDED.v, updated_at=now()', [k, JSON.stringify(v)]); },
+          async set(k, v) { changed.add(k); await c.query('INSERT INTO relay_kv(k,v) VALUES($1,$2) ON CONFLICT(k) DO UPDATE SET v=EXCLUDED.v, updated_at=now()', [k, JSON.stringify(v)]); },
           async insert(k, v) { const r = await c.query('INSERT INTO relay_kv(k,v) VALUES($1,$2) ON CONFLICT(k) DO NOTHING', [k, JSON.stringify(v)]); return r.rowCount === 1; },
           async del(k) { await c.query('DELETE FROM relay_kv WHERE k=$1', [k]); },
           async delPrefix(p) { await c.query("DELETE FROM relay_kv WHERE k LIKE $1 ESCAPE '\\'", [p.replace(/[\\%_]/g, '\\$&') + '%']); },
         };
         const out = await fn(t);
         await c.query('COMMIT');
+        announce(changed);
         return out;
       } catch (e) { await c.query('ROLLBACK').catch(() => {}); throw e; }
       finally { c.release(); }
@@ -101,19 +103,34 @@ const store = {
       const draft = new Map(local);
       const t = {
         async get(k) { return draft.has(k) ? structuredClone(draft.get(k)) : null; },
-        async set(k, v) { draft.set(k, structuredClone(v)); },
+        async set(k, v) { changed.add(k); draft.set(k, structuredClone(v)); },
         async insert(k, v) { if (draft.has(k)) return false; draft.set(k, structuredClone(v)); return true; },
         async del(k) { draft.delete(k); },
         async delPrefix(p) { for (const k of [...draft.keys()]) if (k.startsWith(p)) draft.delete(k); },
       };
       const out = await fn(t);
       local = draft; writeLocal();
+      announce(changed);
       return out;
     });
     lock = run.catch(() => {});
     return run;
   },
 };
+
+// ---------- live updates (Server-Sent Events) ----------
+// After every saved change, tell open pages which teacher's class changed, so they refresh at once.
+const listeners = new Set();
+function announce(keys) {
+  if (!listeners.size || !keys.size) return;
+  const events = [];
+  for (const k of keys) {
+    if (k.startsWith('teacher:')) events.push({ tid: Number(k.slice(8)) });
+    else if (k === 'config') events.push({ config: true });
+  }
+  for (const ev of events) { const line = `data: ${JSON.stringify(ev)}\n\n`; for (const res of listeners) res.write(line); }
+}
+setInterval(() => { for (const res of listeners) res.write(': ping\n\n'); }, 25000).unref();
 
 function defaultConfig() { return { schema: 5, regCode: '', answerKeys: {}, supervisorHash: '', supEpoch: 1, nextTeacherId: 1, legacyAttempts: [], createdAt: now() }; }
 
@@ -339,6 +356,14 @@ async function handle(req, res) {
     const [file, type] = STATIC[p];
     res.writeHead(200, { 'Content-Type': type, 'Cache-Control': type.startsWith('image') ? 'public,max-age=86400' : 'no-cache', 'X-Content-Type-Options': 'nosniff' });
     return res.end(fs.readFileSync(path.join(__dirname, file)));
+  }
+  if (method === 'GET' && p === '/api/events') {
+    if (listeners.size >= 2000) err('server_busy', 503);
+    res.writeHead(200, { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-cache, no-transform', Connection: 'keep-alive', 'X-Accel-Buffering': 'no' });
+    res.write('retry: 3000\n\n');
+    listeners.add(res);
+    req.on('close', () => listeners.delete(res));
+    return;
   }
   if (method === 'GET' && p === '/health') return send(res, 200, { ok: true, storage: pool ? 'postgres' : 'local' });
 
@@ -598,7 +623,7 @@ async function handle(req, res) {
     const ref = await store.get('class:' + classInfo[1]), t = ref?.id ? await store.get('teacher:' + ref.id) : null;
     if (!t || t.blocked) err('class_not_found', 404);
     const visible = t.phase !== 'setup';
-    return send(res, 200, { code: t.classCode, teacher: t.name, phase: t.phase, teams: visible ? t.teams.map(x => ({ id: x.id, name: x.name })) : [], leaderboard: visible ? leaderboard(t) : [] });
+    return send(res, 200, { code: t.classCode, tid: t.id, teacher: t.name, phase: t.phase, teams: visible ? t.teams.map(x => ({ id: x.id, name: x.name })) : [], leaderboard: visible ? leaderboard(t) : [] });
   }
   if (method === 'POST' && p === '/api/student/join') {
     limit(req, 'join', 200);

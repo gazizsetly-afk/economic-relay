@@ -180,10 +180,23 @@ function render(force) {
   if (!session) return;
   const view = (session.role || (onDirectorPage() ? 'director' : classInfo ? 'class' : 'landing')) + ':' + (session.role === 'supervisor' ? (detail ? 'detail' : tab) : tab);
   const html = session.role === 'teacher' ? teacherUI() : session.role === 'supervisor' ? supervisorUI() : session.role === 'student' ? studentUI() : onDirectorPage() ? directorLoginUI() : classInfo ? classUI() : landingUI();
-  const app = $('app'), opened = {};
+  const app = $('app'), opened = {}, same = view === lastView;
   app.querySelectorAll('details[data-k]').forEach(el => opened[el.dataset.k] = el.open);
+  // Keep what the person is typing when the screen refreshes with new data.
+  const typed = {}, ae = document.activeElement, focusId = app.contains(ae) ? ae.id : '';
+  const sel = focusId && typeof ae.selectionStart === 'number' ? [ae.selectionStart, ae.selectionEnd] : null;
+  if (same) app.querySelectorAll('input[id], textarea[id], select[id]').forEach(el => {
+    if (el.type === 'file' || el.type === 'radio' || el.type === 'checkbox') return;
+    const original = el.tagName === 'SELECT' ? ([...el.options].find(o => o.defaultSelected)?.value ?? el.options[0]?.value) : el.defaultValue;
+    if (el.value !== original) typed[el.id] = el.value;
+  });
   app.innerHTML = html;
-  if (view === lastView) app.querySelectorAll('details[data-k]').forEach(el => { if (el.dataset.k in opened) el.open = opened[el.dataset.k]; });
+  if (same) {
+    app.querySelectorAll('details[data-k]').forEach(el => { if (el.dataset.k in opened) el.open = opened[el.dataset.k]; });
+    for (const [id, v] of Object.entries(typed)) { const el = document.getElementById(id); if (el && el.type !== 'file') el.value = v; }
+    const f = focusId && document.getElementById(focusId);
+    if (f) { f.focus({ preventScroll: true }); if (sel) try { f.setSelectionRange(sel[0], sel[1]); } catch {} }
+  }
   if (view !== lastView || force) { app.classList.remove('animate'); void app.offsetWidth; app.classList.add('animate'); }
   lastView = view;
 }
@@ -607,13 +620,41 @@ $('supervisorLink').addEventListener('click', () => { location.href = '/director
 $('brandLink').addEventListener('click', e => { e.preventDefault(); if (session?.role === 'teacher') go('home'); else if (session?.role === 'supervisor') { detail = null; go('teachers'); } else if (onDirectorPage()) location.href = '/'; else { classInfo = null; setUrlCode(''); render(); } });
 $('signout').addEventListener('click', async () => { try { await api('/logout', 'POST', {}); } catch {} detail = null; testDraft = null; tab = 'home'; if (onDirectorPage()) { location.href = '/'; return; } await load(); });
 $('dialog').addEventListener('click', e => { if (e.target === $('dialog')) closeDialog(); });
-// Keep views fresh without interrupting typing.
+// ---------- live updates ----------
+// The server announces every saved change; relevant pages reload their data at once.
+let live = false, lastRefresh = 0, refreshTimer = null;
+function relevant(ev) {
+  const role = session?.role;
+  if (role === 'supervisor') return true;
+  if (role === 'teacher') return !!ev.config || ev.tid === data?.id;
+  if (role === 'student') return ev.tid === data?.tid;
+  if (!role && classInfo) return ev.tid === classInfo.tid;
+  return false;
+}
+function canRefresh() {
+  if (!session) return false;
+  if ($('ansPhoto')?.files.length) return false;
+  if (session.role === 'teacher' && tab === 'test' && !data?.quiz) return false;
+  return true;
+}
+function refreshSoon() {
+  clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(() => { if (canRefresh()) { lastRefresh = Date.now(); load(true); } }, 350);
+}
+function startLive() {
+  if (!window.EventSource) return;
+  const es = new EventSource('/api/events');
+  es.onopen = () => { live = true; };
+  es.onerror = () => { live = false; };
+  es.onmessage = e => { let ev; try { ev = JSON.parse(e.data); } catch { return; } if (relevant(ev)) refreshSoon(); };
+}
+startLive();
+// Safety net: refresh every few seconds if the live connection is down, and now and then anyway.
 setInterval(() => {
-  if (document.hidden || !session || $('dialog').open) return;
-  if (document.activeElement?.matches('input, textarea, select') || $('ansPhoto')?.files.length) return;
-  if (session.role === 'teacher' && tab === 'test' && !data?.quiz) return;
-  if (session.role === 'supervisor' && tab === 'testedit') return;
+  if (document.hidden || !session || !canRefresh()) return;
   if (!session.role && !classInfo) return;
-  load(true);
-}, 12000);
+  if (Date.now() - lastRefresh < (live ? 30000 : 5000)) return;
+  lastRefresh = Date.now(); load(true);
+}, 2500);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && canRefresh()) refreshSoon(); });
 load();

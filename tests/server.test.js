@@ -259,3 +259,17 @@ test('teachers enter with a personal QR link straight to the test; director can 
   await call('boss', '/api/supervisor/teacher', 'POST', { id: created.id, action: 'delete', confirm: 'DELETE' });
   assert.equal((await fetch(base + '/t/' + fresh, { redirect: 'manual' })).headers.get('location'), '/?link=bad');
 });
+
+test('open pages get a live event right after a change', async t => {
+  const { call, base } = await launch(t);
+  const ctrl = new AbortController(); t.after(() => ctrl.abort());
+  const res = await fetch(base + '/api/events', { signal: ctrl.signal });
+  assert.equal(res.headers.get('content-type'), 'text/event-stream; charset=utf-8');
+  const reader = res.body.getReader(), dec = new TextDecoder(); let text = '';
+  const waitFor = async needle => { const end = Date.now() + 3000; while (!text.includes(needle)) { if (Date.now() > end) throw new Error('no event: ' + text); const { value } = await reader.read(); text += dec.decode(value); } };
+  await call('boss', '/api/supervisor/login', 'POST', { login: 'admin', password: SUP });
+  const id = (await call('boss', '/api/supervisor/create-teacher', 'POST', { name: 'Live Teacher', login: 'live' })).data.id;
+  await waitFor(`"tid":${id}`);
+  await call('boss', '/api/supervisor/questions', 'POST', { reset: true });
+  await waitFor('"config":true');
+});
