@@ -1,6 +1,6 @@
 'use strict';
 // Economic Relay v6 — teachers pick their team (no accounts), take the test and see
-// "access to the practical case is open"; the jury watches every team and grades it.
+// "access to the practical case is open"; the jury watches every team's result.
 // Node 22+. Storage: PostgreSQL (DATABASE_URL) or a local JSON file for development.
 const http = require('node:http');
 const fs = require('node:fs');
@@ -20,8 +20,6 @@ if (PROD && (SECRET.length < 24 || !ADMIN_PASSWORD)) {
 }
 
 const QUESTIONS = require('./teacher-test.json');
-const OFFICIAL = require('./official-team-assignments.json');
-const RUBRIC = { analysis: 10, calculation: 15, decision: 15, defense: 10 };
 const TEAM_NAMES = ['Агенты роста', 'Қаржы қырандары', 'Cash Flow (денежный поток)', 'Тапқыр', 'TABYSVIBE', 'Индекс удачи', 'Золотой капитал'];
 
 // ---------- helpers ----------
@@ -35,34 +33,10 @@ function verify(text, encoded) {
 }
 function safeSame(a, b) { const x = crypto.createHash('sha256').update(String(a)).digest(), y = crypto.createHash('sha256').update(String(b)).digest(); return crypto.timingSafeEqual(x, y); }
 const level = (score, total = 20) => { const r = score / total; return r >= 0.9 ? 'high' : r >= 0.7 ? 'good' : r >= 0.5 ? 'basic' : 'repeat'; };
-// The jury may replace the teacher test; otherwise the original 20 questions are used.
+// A test edited in an earlier version is still used; otherwise the original 20 questions.
 const testOf = cfg => (Array.isArray(cfg?.questions) && cfg.questions.length ? cfg.questions : QUESTIONS);
 const teamNames = cfg => (Array.isArray(cfg?.teamNames) && cfg.teamNames.length ? cfg.teamNames : TEAM_NAMES);
-function validateQuestions(list) {
-  if (!Array.isArray(list) || list.length < 5 || list.length > 40) err('questions_count');
-  return list.map((q, i) => {
-    const ru = clean(q?.ru, 500), kk = clean(q?.kk, 500), r = q?.options_ru, k = q?.options_kk, correct = Number(q?.correct);
-    if (!ru || !kk || !Array.isArray(r) || !Array.isArray(k) || r.length < 2 || r.length > 5 || k.length !== r.length) err('question_incomplete');
-    const options_ru = r.map(x => clean(x, 300)), options_kk = k.map(x => clean(x, 300));
-    if ([...options_ru, ...options_kk].some(x => !x) || !Number.isInteger(correct) || correct < 0 || correct >= r.length) err('question_incomplete');
-    return { id: i + 1, ru, kk, options_ru, options_kk, correct };
-  });
-}
 function validLogin(v) { const s = clean(v, 60).toLowerCase(); if (!/^[a-z0-9._@-]{3,40}$/.test(s)) err('login_format'); return s; }
-function sanitizedAnswerKeys(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) err('invalid_answer_key');
-  const out = {};
-  for (let i = 1; i <= 10; i++) {
-    const item = value[i]; if (!item || typeof item !== 'object') err('invalid_answer_key');
-    out[i] = {};
-    for (const l of ['ru', 'kk']) {
-      if (!Array.isArray(item[l]) || item[l].length !== 3) err('invalid_answer_key');
-      out[i][l] = item[l].map(v => { const s = clean(v, 3500); if (!s) err('invalid_answer_key'); return s; });
-    }
-  }
-  return out;
-}
-
 // ---------- key/value store: PostgreSQL or local JSON ----------
 let pool = null, local = null, localFile = '', lock = Promise.resolve();
 function writeLocal() { const tmp = localFile + '.new'; fs.writeFileSync(tmp, JSON.stringify(Object.fromEntries(local))); fs.renameSync(tmp, localFile); }
@@ -124,7 +98,7 @@ setInterval(() => { for (const res of listeners) res.write(': ping\n\n'); }, 250
 
 // ---------- data ----------
 function defaultConfig() { return { schema: 6, round: 1, answerKeys: {}, supervisorHash: '', supEpoch: 1, legacyAttempts: [], history: [], createdAt: now() }; }
-const blankTeam = slot => ({ slot, epoch: 1, quiz: null, grade: null, enteredAt: null });
+const blankTeam = slot => ({ slot, epoch: 1, quiz: null, enteredAt: null });
 // Earlier versions kept everything in one row. Leave it untouched and copy over what still applies.
 function migrateLegacy(cfg, old) {
   if (!old || typeof old !== 'object') return cfg;
@@ -174,9 +148,10 @@ async function allTeams(cfg) {
   return teamNames(cfg).map((name, i) => ({ ...(docs.get(i + 1) || blankTeam(i + 1)), name }));
 }
 const quizSummary = q => (q ? { score: q.score, total: q.total, level: q.level, finishedAt: q.finishedAt } : null);
+// Ranking by the teacher test: higher share of correct answers first, then the faster finish.
 function ranking(teams) {
-  return teams.map(t => ({ slot: t.slot, name: t.name, test: quizSummary(t.quiz), score: Number.isInteger(t.grade?.score) ? t.grade.score : null }))
-    .sort((a, b) => (b.score ?? -1) - (a.score ?? -1) || (b.test?.score ?? -1) - (a.test?.score ?? -1) || a.slot - b.slot);
+  return teams.map(t => ({ slot: t.slot, name: t.name, test: quizSummary(t.quiz) }))
+    .sort((a, b) => (b.test ? b.test.score / b.test.total : -1) - (a.test ? a.test.score / a.test.total : -1) || String(a.test?.finishedAt || '~').localeCompare(String(b.test?.finishedAt || '~')) || a.slot - b.slot);
 }
 
 // ---------- sessions ----------
@@ -325,58 +300,36 @@ async function handle(req, res) {
       const teams = await allTeams(cfg);
       return send(res, 200, {
         owner, actor, round: cfg.round,
-        teams: teams.map(t => ({ slot: t.slot, name: t.name, entered: !!t.enteredAt, quiz: t.quiz ? { ...t.quiz } : null, grade: t.grade, key: cfg.answerKeys?.[t.slot] || null })),
+        teams: teams.map(t => ({ slot: t.slot, name: t.name, entered: !!t.enteredAt, enteredAt: t.enteredAt, quiz: t.quiz ? { ...t.quiz } : null })),
         ranking: ranking(teams), history: cfg.history || [],
-        questions: testOf(cfg), customTest: Array.isArray(cfg.questions) && cfg.questions.length > 0,
-        instructions: OFFICIAL.instructions, answerKeyCount: Object.keys(cfg.answerKeys || {}).length,
         juries: owner ? Object.values(cfg.directors || {}).map(d => ({ login: d.login, name: d.name, createdAt: d.createdAt, lastLoginAt: d.lastLoginAt || null })) : null,
         legacyAttempts: cfg.legacyAttempts || [], hasLegacy: !!cfg.hasLegacy, storage: pool ? 'postgres' : 'local',
       });
     }
-    if (method === 'POST' && p === '/api/jury/grade') {
-      const b = await readBody(req, 20000), slot = Number(b.slot);
-      if (!(slot >= 1 && slot <= teamNames(cfg).length)) err('team_required');
-      const r = b.rubric; if (!r || typeof r !== 'object') err('rubric_required');
-      const vals = {};
-      for (const [k, max] of Object.entries(RUBRIC)) { const v = Number(r[k]); if (r[k] === '' || r[k] == null || !Number.isInteger(v) || v < 0 || v > max) err('rubric_range'); vals[k] = v; }
-      return send(res, 200, await store.tx(async t => {
-        const d = (await t.get('team:' + slot)) || blankTeam(slot);
-        d.grade = { rubric: vals, score: Object.values(vals).reduce((a, v) => a + v, 0), feedback: clean(b.feedback, 1500), gradedAt: now(), by: actor };
-        await t.set('team:' + slot, d);
-        return { ok: true, score: d.grade.score };
-      }));
-    }
     if (method === 'POST' && p === '/api/jury/team') {
+      if (!owner) err('owner_only', 403);
       const b = await readBody(req, 2000), slot = Number(b.slot);
       if (!(slot >= 1 && slot <= teamNames(cfg).length)) err('team_required');
       return send(res, 200, await store.tx(async t => {
         const d = (await t.get('team:' + slot)) || blankTeam(slot);
         if (b.action === 'reset-test') { d.quiz = null; d.enteredAt = null; d.epoch++; }
-        else if (b.action === 'reset-grade') d.grade = null;
         else err('invalid_action');
         await t.set('team:' + slot, d);
         return { ok: true };
       }));
     }
     if (method === 'POST' && p === '/api/jury/new-round') {
+      if (!owner) err('owner_only', 403);
       const b = await readBody(req, 2000); if (b.confirm !== 'NEW ROUND') err('confirm_required');
       const teams = await allTeams(cfg);
       return send(res, 200, await store.tx(async t => {
         const c = await t.get('config');
-        c.history = [{ round: c.round, finishedAt: now(), teams: teams.map(x => ({ slot: x.slot, name: x.name, test: quizSummary(x.quiz), grade: x.grade })) }, ...(c.history || [])].slice(0, 30);
+        c.history = [{ round: c.round, finishedAt: now(), teams: teams.map(x => ({ slot: x.slot, name: x.name, test: quizSummary(x.quiz) })) }, ...(c.history || [])].slice(0, 30);
         c.round++;
         for (const x of teams) await t.set('team:' + x.slot, { ...blankTeam(x.slot), epoch: (x.epoch || 1) + 1 });
         await t.set('config', c);
         return { ok: true, round: c.round };
       }));
-    }
-    if (method === 'POST' && p === '/api/jury/questions') {
-      const b = await readBody(req, 300000), qs = b.reset ? null : validateQuestions(b.questions);
-      return send(res, 200, await store.tx(async t => { const c = await t.get('config'); if (qs) c.questions = qs; else delete c.questions; c.questionsUpdatedAt = now(); await t.set('config', c); return { ok: true }; }));
-    }
-    if (method === 'POST' && p === '/api/jury/answers') {
-      const b = await readBody(req, 250000), keys = sanitizedAnswerKeys(b.answerKeys);
-      return send(res, 200, await store.tx(async t => { const c = await t.get('config'); c.answerKeys = keys; await t.set('config', c); return { ok: true, count: 10 }; }));
     }
     if (method === 'POST' && p === '/api/jury/accounts') {
       if (!owner) err('owner_only', 403);
@@ -401,9 +354,9 @@ async function handle(req, res) {
     }
     if (method === 'GET' && p === '/api/jury/csv') {
       const teams = await allTeams(cfg), rank = ranking(teams);
-      return csv(res, `jury-round-${cfg.round}.csv`, [
-        ['Место', 'Команда', 'Тест (балл)', 'Тест (из)', 'Уровень', 'Тест завершён', 'Этап 1 (10)', 'Этап 2 (15)', 'Этап 3 (15)', 'Защита (10)', 'Итого (50)', 'Комментарий', 'Оценил'],
-        ...rank.map((r, i) => { const x = teams.find(y => y.slot === r.slot); return [r.score != null ? i + 1 : '', x.name, x.quiz?.score ?? '', x.quiz?.total ?? '', x.quiz?.level ?? '', x.quiz?.finishedAt ?? '', x.grade?.rubric?.analysis ?? '', x.grade?.rubric?.calculation ?? '', x.grade?.rubric?.decision ?? '', x.grade?.rubric?.defense ?? '', x.grade?.score ?? '', x.grade?.feedback ?? '', x.grade?.by ?? '']; }),
+      return csv(res, `test-results-round-${cfg.round}.csv`, [
+        ['Место', 'Команда', 'Балл', 'Из', 'Уровень', 'Начали', 'Тест завершён'],
+        ...rank.map((r, i) => { const x = teams.find(y => y.slot === r.slot); return [x.quiz ? i + 1 : '', x.name, x.quiz?.score ?? '', x.quiz?.total ?? '', x.quiz?.level ?? '', x.enteredAt ?? '', x.quiz?.finishedAt ?? '']; }),
       ]);
     }
     if (method === 'GET' && p === '/api/jury/legacy-export') {

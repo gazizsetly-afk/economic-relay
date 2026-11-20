@@ -62,42 +62,45 @@ test('a teacher picks the team without any login, takes the test once and sees t
   assert.equal((await call('t4', '/api/jury')).status, 401);
 });
 
-test('jury sees every team, grades on the 50-point rubric, resets a test, starts a new round', async t => {
+test('jury only observes: sees every team and the test results; admin can reset a test and start a new round', async t => {
   const { call } = await launch(t);
   await call('t1', '/api/team/enter', 'POST', { slot: 1 });
   await call('t1', '/api/team/quiz', 'POST', { answers: Array(20).fill(0) });
+  await call('t3', '/api/team/enter', 'POST', { slot: 3 });
+  await call('t3', '/api/team/quiz', 'POST', { answers: correct });
   await call('t2', '/api/team/enter', 'POST', { slot: 2 });
   assert.equal((await call('j', '/api/jury/login', 'POST', { login: 'admin', password: 'wrong' })).status, 401);
-  assert.equal((await call('j', '/api/jury/login', 'POST', { login: 'admin', password: SUP })).status, 200);
+  assert.equal((await call('own', '/api/jury/login', 'POST', { login: 'admin', password: SUP })).status, 200);
+  assert.equal((await call('own', '/api/jury/accounts', 'POST', { action: 'create', name: 'Жюри Бір', login: 'jury1', password: 'Jury-pass-2026' })).status, 200);
+  assert.equal((await call('j', '/api/jury/login', 'POST', { login: 'jury1', password: 'Jury-pass-2026' })).status, 200);
   assert.equal((await call('j', '/api/session')).data.role, 'jury');
-  let jury = (await call('j', '/api/jury')).data;
-  assert.equal(jury.teams.length, 7); assert.equal(jury.owner, true);
-  assert.ok(jury.teams[0].quiz.score >= 0); assert.equal(jury.teams[1].entered, true); assert.equal(jury.teams[1].quiz, null); assert.equal(jury.teams[2].entered, false);
-  assert.equal((await call('j', '/api/jury/grade', 'POST', { slot: 1, rubric: { analysis: 11, calculation: 10, decision: 10, defense: 10 } })).data.error, 'rubric_range');
-  assert.equal((await call('j', '/api/jury/grade', 'POST', { slot: 1, rubric: { analysis: 9, calculation: 14, decision: 12, defense: 8 }, feedback: 'Жақсы' })).data.score, 43);
-  assert.equal((await call('j', '/api/jury/grade', 'POST', { slot: 3, rubric: { analysis: 10, calculation: 15, decision: 15, defense: 10 } })).data.score, 50);
-  jury = (await call('j', '/api/jury')).data;
-  assert.deepEqual(jury.ranking.slice(0, 2).map(x => x.name), ['Cash Flow (денежный поток)', 'Агенты роста']);
-  assert.equal(jury.teams[0].grade.by, 'admin');
-  const csv = (await call('j', '/api/jury/csv')).data; assert.ok(csv.includes('Жақсы') && csv.includes('Агенты роста'));
-  // jury answers shown per team after import
-  assert.equal((await call('j', '/api/jury/answers', 'POST', { answerKeys: keys })).status, 200);
-  assert.equal((await call('j', '/api/jury')).data.teams[4].key.ru[0], 'Анализ 5');
-  // reset one team's test: its device session ends, the test can be taken again
-  assert.equal((await call('j', '/api/jury/team', 'POST', { slot: 1, action: 'reset-test' })).status, 200);
+  const jury = (await call('j', '/api/jury')).data;
+  assert.equal(jury.teams.length, 7); assert.equal(jury.owner, false);
+  assert.equal(jury.teams[2].quiz.score, 20); assert.equal(jury.teams[1].entered, true); assert.equal(jury.teams[1].quiz, null); assert.equal(jury.teams[3].entered, false);
+  assert.equal(jury.teams[0].grade, undefined, 'no grading any more');
+  assert.equal(jury.ranking[0].name, 'Cash Flow (денежный поток)', 'ranking by test score');
+  assert.equal(jury.ranking[0].test.score, 20);
+  // nothing to change for the jury: no grading, no test editing, no reset
+  assert.equal((await call('j', '/api/jury/grade', 'POST', { slot: 1, rubric: { analysis: 1, calculation: 1, decision: 1, defense: 1 } })).status, 404);
+  assert.equal((await call('j', '/api/jury/questions', 'POST', { reset: true })).status, 404);
+  assert.equal((await call('j', '/api/jury/team', 'POST', { slot: 1, action: 'reset-test' })).data.error, 'owner_only');
+  assert.equal((await call('j', '/api/jury/new-round', 'POST', { confirm: 'NEW ROUND' })).data.error, 'owner_only');
+  const csv = (await call('j', '/api/jury/csv')).data; assert.ok(csv.includes('Cash Flow') && csv.includes('Агенты роста'));
+  // admin: reset one team's test; its device session ends, the test can be taken again
+  assert.equal((await call('own', '/api/jury/team', 'POST', { slot: 1, action: 'reset-test' })).status, 200);
   assert.equal((await call('t1', '/api/team')).status, 401);
   await call('t1', '/api/team/enter', 'POST', { slot: 1 });
   assert.equal((await call('t1', '/api/team/quiz', 'POST', { answers: correct })).data.score, 20);
-  // new round archives and clears everything
-  assert.equal((await call('j', '/api/jury/new-round', 'POST', {})).status, 400);
-  assert.equal((await call('j', '/api/jury/new-round', 'POST', { confirm: 'NEW ROUND' })).data.round, 2);
-  jury = (await call('j', '/api/jury')).data;
-  assert.equal(jury.round, 2); assert.ok(jury.teams.every(x => !x.quiz && !x.grade));
-  assert.equal(jury.history[0].teams[2].grade.score, 50);
+  // admin: new round archives and clears everything
+  assert.equal((await call('own', '/api/jury/new-round', 'POST', {})).status, 400);
+  assert.equal((await call('own', '/api/jury/new-round', 'POST', { confirm: 'NEW ROUND' })).data.round, 2);
+  const after = (await call('j', '/api/jury')).data;
+  assert.equal(after.round, 2); assert.ok(after.teams.every(x => !x.quiz));
+  assert.equal(after.history[0].teams[2].test.score, 20);
   assert.equal((await call('t1', '/api/team')).status, 401, 'teachers choose again in a new round');
 });
 
-test('only the jury edits the test; admin manages jury logins', async t => {
+test('admin manages jury logins; a removed login stops working', async t => {
   const { call } = await launch(t);
   await call('own', '/api/jury/login', 'POST', { login: 'admin', password: SUP });
   assert.equal((await call('own', '/api/jury/accounts', 'POST', { action: 'create', name: 'Жюри Бір', login: 'jury1', password: 'short' })).data.error, 'password_too_short_8');
@@ -106,30 +109,17 @@ test('only the jury edits the test; admin manages jury logins', async t => {
   assert.equal((await call('j1', '/api/jury/login', 'POST', { login: 'JURY1', password: 'Jury-pass-2026' })).status, 200);
   const j = (await call('j1', '/api/jury')).data; assert.equal(j.owner, false); assert.equal(j.actor, 'Жюри Бір'); assert.equal(j.juries, null);
   assert.equal((await call('j1', '/api/jury/accounts', 'POST', { action: 'create', name: 'X Y Z', login: 'other', password: 'Jury-pass-2026' })).status, 403);
-  // the test
-  const qs = Array.from({ length: 5 }, (_, i) => ({ ru: 'Вопрос ' + i, kk: 'Сұрақ ' + i, options_ru: ['a', 'b', 'c'], options_kk: ['а', 'ә', 'б'], correct: i % 3 }));
-  assert.equal((await call('t', '/api/jury/questions', 'POST', { questions: qs })).status, 401);
-  assert.equal((await call('j1', '/api/jury/questions', 'POST', { questions: qs.slice(0, 4) })).data.error, 'questions_count');
-  assert.equal((await call('j1', '/api/jury/questions', 'POST', { questions: qs })).status, 200);
-  await call('t', '/api/team/enter', 'POST', { slot: 5 });
-  assert.equal((await call('t', '/api/team')).data.questions.length, 5);
-  assert.equal((await call('t', '/api/team/quiz', 'POST', { answers: qs.map(q => q.correct) })).data.score, 5);
-  assert.equal((await call('j1', '/api/jury/questions', 'POST', { reset: true })).status, 200);
-  const me = (await call('t', '/api/team')).data;
-  assert.equal(me.quiz.total, 5); assert.equal(me.questions[1].ru, 'Вопрос 1', 'a finished test keeps its questions');
-  // grading by a jury member is attributed; revoking access ends the session
-  await call('j1', '/api/jury/grade', 'POST', { slot: 5, rubric: { analysis: 5, calculation: 5, decision: 5, defense: 5 } });
-  assert.equal((await call('own', '/api/jury')).data.teams[4].grade.by, 'Жюри Бір');
+  assert.equal((await call('own', '/api/jury')).data.juries[0].login, 'jury1');
   assert.equal((await call('own', '/api/jury/accounts', 'POST', { action: 'delete', login: 'jury1' })).status, 200);
   assert.equal((await call('j1', '/api/jury')).status, 401);
 });
 
-test('earlier data: the old record is kept and its jury answers carried over', async t => {
+test('earlier data: the old record is kept and can be downloaded', async t => {
   const legacy = { schema: 3, round: 4, teacherHash: '', officialAnswerKeys: keys, teacherAttempts: [{ name: 'Старый тест', score: 15, total: 20, finishedAt: '2026-11-19T10:00:00.000Z' }], teams: [{ id: 1, name: 'A', pin_hash: 'x', pin_cipher: 'y' }] };
   const { call } = await launch(t, { legacy });
   await call('j', '/api/jury/login', 'POST', { login: 'admin', password: SUP });
   const j = (await call('j', '/api/jury')).data;
-  assert.equal(j.answerKeyCount, 10); assert.equal(j.hasLegacy, true);
+  assert.equal(j.hasLegacy, true);
   const backup = await call('j', '/api/jury/legacy-export'); assert.equal(backup.status, 200); assert.equal(backup.data.round, 4); assert.equal(backup.data.teams[0].pin_hash, undefined);
 });
 
@@ -150,7 +140,8 @@ test('open pages get a live event right after a change', async t => {
   const waitFor = async needle => { const end = Date.now() + 3000; while (!text.includes(needle)) { if (Date.now() > end) throw new Error('no event: ' + text); const { value } = await reader.read(); text += dec.decode(value); } };
   await call('t', '/api/team/enter', 'POST', { slot: 6 });
   await waitFor('"team":6');
+  await call('t', '/api/team/quiz', 'POST', { answers: correct });
   await call('j', '/api/jury/login', 'POST', { login: 'admin', password: SUP });
-  await call('j', '/api/jury/questions', 'POST', { reset: true });
+  await call('j', '/api/jury/new-round', 'POST', { confirm: 'NEW ROUND' });
   await waitFor('"config":true');
 });
