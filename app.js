@@ -18,6 +18,12 @@ const S = {
   teacherLogin: ['Вход преподавателя', 'Мұғалімнің кіруі'], noAccount: ['Нет аккаунта? Зарегистрируйтесь', 'Аккаунт жоқ па? Тіркеліңіз'], haveAccount: ['Уже есть аккаунт? Войти', 'Аккаунт бар ма? Кіру'],
   supervisorLogin: ['Вход для директора', 'Директорға кіру'], supervisorText: ['Директор видит всех преподавателей, их тесты, студентов и оценки. Главный администратор входит с логином admin.', 'Директор барлық мұғалімді, олардың тестін, студенттері мен бағаларын көреді. Бас әкімші admin логинімен кіреді.'],
   toHome: ['На главную', 'Басты бетке'],
+  quickTitle: ['Быстрый вход по QR', 'QR арқылы жылдам кіру'], quickHelp: ['Личный QR этого преподавателя. Сканирует телефоном — и сразу попадает в свой кабинет на тест, без логина и пароля. Не показывайте его студентам.', 'Осы мұғалімнің жеке QR-коды. Телефонмен сканерлейді — логин мен құпиясөзсіз бірден өз кабинетіне, тестке кіреді. Студенттерге көрсетпеңіз.'],
+  printCard: ['Распечатать карточку', 'Карточканы басып шығару'], newLink: ['Заменить QR', 'QR-ды ауыстыру'], newLinkConfirm: ['Создать новый QR? Старый QR и ссылка перестанут работать.', 'Жаңа QR жасау керек пе? Ескі QR мен сілтеме жұмыс істемейді.'],
+  printAllQr: ['Распечатать QR всех преподавателей', 'Барлық мұғалімнің QR-ын басып шығару'], qrCardText: ['Отсканируйте телефоном — откроется ваш кабинет и тест.', 'Телефонмен сканерлеңіз — кабинетіңіз бен тест ашылады.'],
+  passOptional: ['Пароль (необязательно)', 'Құпиясөз (міндетті емес)'], passOptionalHint: ['можно оставить пустым — преподаватель входит по личному QR', 'бос қалдыруға болады — мұғалім жеке QR арқылы кіреді'],
+  linkBad: ['Эта ссылка или QR больше не действует. Попросите у директора новый.', 'Бұл сілтеме не QR енді жарамсыз. Директордан жаңасын сұраңыз.'], linkBlocked: ['Аккаунт заблокирован директором.', 'Аккаунтты директор бұғаттаған.'],
+  quickStart: ['Тест открыт — отвечайте на вопросы. После теста откройте задания студентам на вкладке «Главная».', 'Тест ашық — сұрақтарға жауап беріңіз. Тесттен кейін «Басты» бөлімінде студенттерге тапсырма ашыңыз.'],
   editCase: ['Изменить задание', 'Тапсырманы өзгерту'], editCaseTitle: ['Задание команды', 'Команда тапсырмасы'], editCaseHelp: ['Измените название и три этапа на обоих языках. Студенты увидят новое задание сразу. Образцы ответов жюри для изменённого задания не показываются.', 'Атауын және үш кезеңін екі тілде өзгертіңіз. Студенттер жаңа тапсырманы бірден көреді. Өзгертілген тапсырмаға қазылардың үлгі жауаптары көрсетілмейді.'],
   caseTitle: ['Название кейса', 'Кейс атауы'], stageHeading: ['Заголовок этапа', 'Кезең тақырыбы'], stageBody: ['Текст этапа', 'Кезең мәтіні'], restoreCase: ['Вернуть исходное задание', 'Бастапқы тапсырманы қайтару'], restoreConfirm: ['Вернуть исходное задание из документа?', 'Құжаттағы бастапқы тапсырманы қайтару керек пе?'],
   edited: ['изменено', 'өзгертілген'], caseFill: ['Заполните название и все три этапа на обоих языках.', 'Атауын және үш кезеңді екі тілде толтырыңыз.'],
@@ -85,7 +91,7 @@ const S = {
   deleteTeacher: ['Удалить аккаунт', 'Аккаунтты өшіру'], deleteConfirm: ['Удалить аккаунт и все его данные? Это нельзя отменить.', 'Аккаунтты және оның барлық деректерін өшіру керек пе? Қайтару мүмкін емес.'],
   attempts: ['Попытки теста', 'Тест әрекеттері'], registered: ['Зарегистрирован', 'Тіркелген'],
   regTitle: ['Регистрация преподавателей', 'Мұғалімдерді тіркеу'], regHelp: ['Если задать код, зарегистрироваться смогут только те, кому вы его сообщили. Пусто — регистрация открыта для всех.', 'Код қойсаңыз, тек кодты білетіндер тіркеле алады. Бос болса — тіркелу барлығына ашық.'],
-  createTitle: ['Создать аккаунт преподавателю', 'Мұғалімге аккаунт ашу'], createHelp: ['Преподаватели не могут зарегистрироваться сами. Создайте логин и пароль и передайте их преподавателю лично.', 'Мұғалімдер өздері тіркеле алмайды. Логин мен құпиясөз жасап, мұғалімге жеке беріңіз.'], teacherCreated: ['Аккаунт создан. Передайте преподавателю логин и пароль.', 'Аккаунт ашылды. Логин мен құпиясөзді мұғалімге беріңіз.'],
+  createTitle: ['Создать аккаунт преподавателю', 'Мұғалімге аккаунт ашу'], createHelp: ['Преподаватели не могут зарегистрироваться сами. Создайте аккаунт — сразу появится личный QR преподавателя: распечатайте или отправьте ему.', 'Мұғалімдер өздері тіркеле алмайды. Аккаунт ашыңыз — мұғалімнің жеке QR-коды бірден шығады: басып шығарыңыз не жіберіңіз.'], teacherCreated: ['Аккаунт создан. Ниже — личный QR преподавателя.', 'Аккаунт ашылды. Төменде — мұғалімнің жеке QR-коды.'],
   keysTitle: ['Образцы ответов жюри', 'Қазылардың үлгі жауаптары'], keysHelp: ['Загрузите приватный JSON-файл с ответами. Его увидят только преподаватели в разделе оценок. Не выкладывайте файл в GitHub.', 'Жауаптары бар жеке JSON файлды жүктеңіз. Оны тек мұғалімдер бағалау бөлімінде көреді. Файлды GitHub-қа салмаңыз.'],
   keysLoaded: ['Загружено для кейсов', 'Жүктелген кейстер'], importFile: ['Загрузить файл', 'Файлды жүктеу'],
   exportTitle: ['Отчёт по преподавателям', 'Мұғалімдер бойынша есеп'], legacyTitle: ['Данные прошлой версии сайта', 'Сайттың алдыңғы нұсқасының деректері'], legacyHelp: ['Результаты старого общего кабинета сохранены. Можно скачать резервную копию.', 'Ескі ортақ кабинеттің нәтижелері сақталған. Резервтік көшірмені жүктеуге болады.'], legacyDownload: ['Скачать резервную копию', 'Резервтік көшірмені жүктеу'],
@@ -134,6 +140,14 @@ function urlCode() { const c = new URLSearchParams(location.search).get('c'); re
 function setUrlCode(code) { const u = new URL(location.href); if (code) u.searchParams.set('c', code); else u.searchParams.delete('c'); history.replaceState(null, '', u); }
 
 let quizKey = '';
+function consumeUrlFlags() {
+  const u = new URL(location.href), go = u.searchParams.get('go'), link = u.searchParams.get('link');
+  if (!go && !link) return;
+  u.searchParams.delete('go'); u.searchParams.delete('link'); history.replaceState(null, '', u);
+  if (link) setTimeout(() => toast(L(link === 'blocked' ? 'linkBlocked' : 'linkBad')), 300);
+  if (go === 'test') { tab = 'test'; setTimeout(() => toast(L('quickStart')), 400); } else if (go === 'home') tab = 'home';
+}
+consumeUrlFlags();
 async function load(quiet) {
   try {
     const before = quiet ? JSON.stringify([session, data, classInfo, detail]) : '';
@@ -346,6 +360,7 @@ function testUI() {
   if (d.quiz) {
     return card('', `<div class="result-head"><div><h2>🎉 ${L('testResult')}</h2><p class="muted">${fmtDate(d.quiz.finishedAt)}</p></div><div class="score-ring" style="--p:${d.quiz.score / d.quiz.total * 100}"><b>${d.quiz.score}</b><small>/${d.quiz.total}</small></div></div>
       <p class="note good"><b>${L('level')}:</b> ${L('lv_' + d.quiz.level)}</p>
+      ${d.phase === 'open' ? `<p class="note">✓ ${L('phase_open')} · ${L('classCode')} <b>${esc(d.classCode)}</b></p>` : `<div class="next-step"><div><b>${L('step3')}</b><p class="muted small">${L('step3t')}</p></div><button class="btn green" onclick="openTasks().then(()=>go('home'))">🔓 ${L('openTasks')}</button></div>`}
       ${qs.map((q, i) => { const mine = d.quiz.answers[i], ok = mine === q.correct; return `<details class="qa ${ok ? 'ok' : 'no'}"><summary>${ok ? '✅' : '❌'} ${i + 1}. ${esc(q[lang])}</summary><p><b>${L('correctAnswer')}:</b> ${LETTERS[q.correct]}) ${esc(q['options_' + lang][q.correct])}</p>${ok ? '' : `<p class="muted">${L('yourChoice')}: ${LETTERS[mine]}) ${esc(q['options_' + lang][mine])}</p>`}</details>`; }).join('')}`);
   }
   const i = quiz.index, q = qs[i], n = qs.length, answered = Object.keys(quiz.answers).length;
@@ -469,7 +484,7 @@ function supTeachersUI() {
   const list = data.teachers, passed = list.filter(t => t.lastAttempt), avg = passed.length ? Math.round(passed.reduce((a, t) => a + t.lastAttempt.score / t.lastAttempt.total * 100, 0) / passed.length) + '%' : '—';
   const q = search.trim().toLowerCase(), shown = q ? list.filter(t => t.name.toLowerCase().includes(q) || t.login.includes(q)) : list;
   return `<div class="tiles reveal"><div class="tile"><b>${list.length}</b><span>${L('sTeachers')}</span></div><div class="tile"><b>${passed.length}</b><span>${L('sPassed')}</span></div><div class="tile"><b>${avg}</b><span>${L('sAvg')}</span></div><div class="tile"><b>${list.filter(t => t.phase === 'open').length}</b><span>${L('sOpen')}</span></div><div class="tile"><b>${list.reduce((n, t) => n + t.students, 0)}</b><span>${L('sStudents')}</span></div></div>
-  <section class="card reveal add-teacher"><details data-k="addTeacher"${list.length ? '' : ' open'}><summary class="btn primary">➕ ${L('createTitle')}</summary><p class="muted mt">${L('createHelp')}</p><form class="add-grid" onsubmit="createTeacher(event)">${field(L('fullName'), 'cName', 'required minlength="3" maxlength="120"')}${field(L('login'), 'cLogin', 'required minlength="3" maxlength="40" autocapitalize="none" spellcheck="false"', L('loginHint'))}${field(L('password'), 'cPass', 'required minlength="6" autocomplete="new-password"', L('passwordHint'))}<button class="btn green" type="submit">✓ ${L('createAccount')}</button></form></details></section>
+  <section class="card reveal add-teacher"><details data-k="addTeacher"${list.length ? '' : ' open'}><summary class="btn primary">➕ ${L('createTitle')}</summary><p class="muted mt">${L('createHelp')}</p><form class="add-grid" onsubmit="createTeacher(event)">${field(L('fullName'), 'cName', 'required minlength="3" maxlength="120"')}${field(L('login'), 'cLogin', 'required minlength="3" maxlength="40" autocapitalize="none" spellcheck="false"', L('loginHint'))}${field(L('passOptional'), 'cPass', 'minlength="6" autocomplete="new-password"', L('passOptionalHint'))}<button class="btn green" type="submit">✓ ${L('createAccount')}</button></form></details><button class="btn ghost small mt" onclick="printAllQr()">🖨 ${L('printAllQr')}</button></section>
   <section class="card reveal"><div class="section-head"><input class="input search" id="searchBox" placeholder="🔎 ${L('search')}" value="${esc(search)}" oninput="search=this.value;filterTeachers()"><a class="btn ghost small" href="/api/supervisor/csv" download>↓ ${L('downloadCsv')}</a></div>
   ${list.length ? `<div class="table-wrap"><table class="table"><thead><tr><th>${L('colTeacher')}</th><th>${L('colTest')}</th><th>${L('colClass')}</th><th>${L('colTeams')}</th><th>${L('colLast')}</th><th></th></tr></thead><tbody id="teacherRows">${teacherRows(shown)}</tbody></table></div>` : `<p class="muted">${L('noTeachers')}</p>`}</section>`;
 }
@@ -489,6 +504,9 @@ function teacherDetailUI() {
     ${card(`👩‍🏫 ${esc(d.name)}`, `<p class="muted">${L('login')}: <b>${esc(d.login)}</b> · ${L('registered')}: ${fmtDate(d.createdAt)}<br>${L('colLast')}: ${fmtDate(d.lastLoginAt)}</p>
       <p>${phasePill(d.phase)} ${pill(L('classCode') + ' ' + esc(d.classCode))} ${pill(L('lesson') + ' ' + d.round)} ${d.blocked ? pill('⛔ ' + L('blocked'), 'red') : ''}</p>
       <div class="btn-row"><button class="btn ghost small" onclick="supAct('reset')">🔑 ${L('resetPassword')}</button><button class="btn ghost small" onclick="supAct('${d.blocked ? 'unblock' : 'block'}')">${d.blocked ? '✓ ' + L('unblock') : '⛔ ' + L('block')}</button><button class="btn soft-red small" onclick="supAct('delete')">🗑 ${L('deleteTeacher')}</button></div>`)}
+    ${quickCard(d)}
+  </div>
+  <div class="split mt">
     ${card('🧠 ' + L('attempts'), d.attempts.length ? `<ul class="attempts">${d.attempts.map(a => `<li><b>${a.score}/${a.total}</b> <span>${L('lv_' + a.level)}</span><small>${L('lesson')} ${a.round} · ${fmtDate(a.finishedAt)}</small></li>`).join('')}</ul>` : `<p class="muted">${L('notTaken')}</p>`)}
   </div>
   ${d.phase !== 'setup' || d.teams.some(t => t.submission) ? rankingCard(d.leaderboard) : ''}
@@ -496,11 +514,25 @@ function teacherDetailUI() {
   ${d.teams.map((t, i) => teamReview(t, i, d, false)).join('')}
   ${d.history.length ? card('🗂 ' + L('history'), d.history.map(h => `<details class="qa"><summary>${L('lesson')} ${h.round} · ${fmtDate(h.finishedAt)} · 🧠 ${h.quizScore ?? '—'}/20</summary>${h.teams.map(t => `<p>${esc(t.name)}: <b>${t.score ?? '—'}</b>/50 <span class="muted small">${t.members.map(esc).join(', ')}</span></p>`).join('')}</details>`).join('')) : ''}`;
 }
+const quickUrl = token => location.origin + '/t/' + token;
+function quickCard(d) {
+  if (!d.linkToken) return '';
+  const link = quickUrl(d.linkToken);
+  return card('⚡ ' + L('quickTitle'), `<div class="center-card"><img class="qr" src="/api/qr?t=${esc(d.linkToken)}" alt="QR" width="200" height="200"></div><p class="muted small">${L('quickHelp')}</p><div class="linkbox">${esc(link)}</div>
+    <div class="btn-row"><button class="btn ghost small" onclick="copyText('${esc(link)}')">⧉ ${L('copyLink')}</button><button class="btn ghost small" onclick="printQrCards([{name:detail.name,linkToken:detail.linkToken}])">🖨 ${L('printCard')}</button><button class="btn soft-red small" onclick="supAct('newlink')">↻ ${L('newLink')}</button></div>`);
+}
+function printQrCards(list) {
+  const w = window.open('', '_blank'); if (!w) return;
+  w.document.write(`<!doctype html><meta charset="utf-8"><title>QR</title><style>body{font-family:system-ui,sans-serif;display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:18px;margin:0}div{border:2px dashed #555;border-radius:14px;padding:16px;text-align:center;break-inside:avoid}h2{margin:0 0 8px;font-size:20px}img{width:190px;height:190px}p{margin:6px 0 0;font-size:13px}</style>${list.map(t => `<div><h2>👩‍🏫 ${esc(t.name)}</h2><img src="${location.origin}/api/qr?t=${esc(t.linkToken)}"><p>${L('qrCardText')}</p></div>`).join('')}<script>Promise.all([...document.images].map(i=>i.complete?1:new Promise(r=>{i.onload=i.onerror=r}))).then(()=>print())<\/script>`);
+  w.document.close();
+}
+async function printAllQr() { try { const r = await api('/supervisor/links'); if (r.teachers.length) printQrCards(r.teachers); else toast(L('noTeachers')); } catch (e) { toast(errText(e.message)); } }
 async function supAct(action) {
   const body = { id: detail.id, action };
   if (action === 'reset') { const p = prompt(L('resetPrompt')); if (!p) return; if (p.length < 6) { toast(errText('password_too_short')); return; } body.password = p; }
   if (action === 'delete') { if (!confirm(L('deleteConfirm'))) return; body.confirm = 'DELETE'; }
   if (action === 'block' && !confirm(L('block') + '?')) return;
+  if (action === 'newlink' && !confirm(L('newLinkConfirm'))) return;
   const r = await act('/supervisor/teacher', body);
   if (r && action === 'delete') { detail = null; render(); }
 }
@@ -551,7 +583,7 @@ async function directorAct(action, login) {
   else if (!confirm(L('directorDelete'))) return;
   await act('/supervisor/directors', body);
 }
-async function createTeacher(e) { e.preventDefault(); const r = await act('/supervisor/create-teacher', { name: $('cName').value.trim(), login: $('cLogin').value.trim(), password: $('cPass').value }, L('teacherCreated')); if (r) e.target.reset(); }
+async function createTeacher(e) { e.preventDefault(); const r = await act('/supervisor/create-teacher', { name: $('cName').value.trim(), login: $('cLogin').value.trim(), password: $('cPass').value }, L('teacherCreated')); if (r) { e.target.reset(); await openTeacher(r.id); } }
 async function importKeys(input) {
   const f = input.files[0]; if (!f) return;
   try { const json = JSON.parse(await f.text()); await act('/supervisor/answers', { answerKeys: json.answerKeys || json }); }

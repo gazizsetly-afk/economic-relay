@@ -306,3 +306,5 @@ textarea.input{resize:vertical;line-height:1.55}
 .count-picker{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.count-input{width:90px;text-align:center;font-size:20px;font-weight:800}.count-picker .btn.ghost{width:46px;padding:12px 0;font-size:20px}
 
 .add-teacher summary{list-style:none;display:inline-flex}.add-teacher summary::-webkit-details-marker{display:none}.add-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:12px;align-items:start}.add-grid .btn{margin-top:24px}@media (max-width:900px){.add-grid{grid-template-columns:1fr}.add-grid .btn{margin-top:0}}
+
+.next-step{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:16px;border-radius:18px;background:linear-gradient(135deg,#e7faf6,#f1efff);margin-bottom:16px}.next-step p{margin:4px 0 0}

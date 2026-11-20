@@ -223,3 +223,39 @@ test('teacher edits a team case; only the director edits the teacher test; direc
   assert.equal((await call('dir', '/api/supervisor')).status, 401);
   assert.equal((await call('x', '/director')).status, 200);
 });
+
+test('teachers enter with a personal QR link straight to the test; director can renew it', async t => {
+  const { call, base } = await launch(t);
+  await call('boss', '/api/supervisor/login', 'POST', { login: 'admin', password: SUP });
+  const created = (await call('boss', '/api/supervisor/create-teacher', 'POST', { name: 'Гүлнар Ахметова', login: 'gulnar' })).data;
+  assert.ok(created.linkToken, 'password is optional and a link is created');
+  const link = (await call('boss', '/api/supervisor/teacher/' + created.id)).data.linkToken;
+  assert.equal(link, created.linkToken);
+  // following the link signs in and lands on the test
+  let r = await fetch(base + '/t/' + link, { redirect: 'manual' });
+  assert.equal(r.status, 302); assert.equal(r.headers.get('location'), '/?go=test');
+  const cookie = r.headers.get('set-cookie').split(';')[0];
+  const me = await (await fetch(base + '/api/teacher', { headers: { cookie } })).json();
+  assert.equal(me.name, 'Гүлнар Ахметова'); assert.equal(me.linkToken, undefined, 'teacher view does not expose the token');
+  await fetch(base + '/api/teacher/quiz', { method: 'POST', headers: { cookie, 'Content-Type': 'application/json' }, body: JSON.stringify({ answers: correct }) });
+  r = await fetch(base + '/t/' + link, { redirect: 'manual' }); assert.equal(r.headers.get('location'), '/?go=home');
+  // QR image for the link, bad links
+  const qr = await call('boss', '/api/qr?t=' + link); assert.equal(qr.status, 200);
+  assert.equal((await fetch(base + '/t/nope', { redirect: 'manual' })).headers.get('location'), '/?link=bad');
+  // renew: old link stops working
+  assert.equal((await call('boss', '/api/supervisor/teacher', 'POST', { id: created.id, action: 'newlink' })).status, 200);
+  const fresh = (await call('boss', '/api/supervisor/teacher/' + created.id)).data.linkToken;
+  assert.notEqual(fresh, link);
+  assert.equal((await fetch(base + '/t/' + link, { redirect: 'manual' })).headers.get('location'), '/?link=bad');
+  assert.equal((await fetch(base + '/t/' + fresh, { redirect: 'manual' })).status, 302);
+  // blocked teacher cannot use the link; all links for printing
+  await call('boss', '/api/supervisor/create-teacher', 'POST', { name: 'Ерлан Сапаров', login: 'erlan', password: 'secret12' });
+  const links = (await call('boss', '/api/supervisor/links')).data.teachers;
+  assert.equal(links.length, 2); assert.ok(links.every(x => x.linkToken));
+  assert.equal((await call('x', '/api/supervisor/links')).status, 401);
+  await call('boss', '/api/supervisor/teacher', 'POST', { id: created.id, action: 'block' });
+  assert.equal((await fetch(base + '/t/' + fresh, { redirect: 'manual' })).headers.get('location'), '/?link=blocked');
+  // deleting the teacher removes the link
+  await call('boss', '/api/supervisor/teacher', 'POST', { id: created.id, action: 'delete', confirm: 'DELETE' });
+  assert.equal((await fetch(base + '/t/' + fresh, { redirect: 'manual' })).headers.get('location'), '/?link=bad');
+});

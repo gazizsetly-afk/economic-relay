@@ -203,6 +203,18 @@ function studentOf(tok, t) {
   return m ? { team, m } : null;
 }
 
+// ---------- personal quick-entry links (QR) for teachers ----------
+const TOKEN_RE = /^[A-Za-z0-9_-]{24,64}$/;
+async function ensureLink(t, doc, renew = false) {
+  if (doc.linkToken && !renew) return false;
+  if (doc.linkToken) await t.del('tlink:' + doc.linkToken);
+  for (let i = 0; i < 10; i++) {
+    const token = crypto.randomBytes(18).toString('base64url');
+    if (await t.insert('tlink:' + token, { id: doc.id })) { doc.linkToken = token; return true; }
+  }
+  err('server_busy', 503);
+}
+
 // ---------- domain ----------
 function makeTeams(count, old = []) {
   return Array.from({ length: count }, (_, i) => ({
@@ -237,7 +249,7 @@ function teacherView(t, cfg, { forSupervisor = false } = {}) {
     })),
     leaderboard: leaderboard(t), history: t.history || [],
     answerKeys: cfg.answerKeys || {}, testSize: testOf(cfg).length,
-    ...(forSupervisor ? {} : { instructions: OFFICIAL.instructions }),
+    ...(forSupervisor ? { linkToken: t.linkToken || null } : { instructions: OFFICIAL.instructions }),
   };
 }
 function teacherSummary(t) {
@@ -305,6 +317,24 @@ function originOf(req) { return clean(process.env.PUBLIC_URL || `${PROD ? 'https
 
 async function handle(req, res) {
   const url = new URL(req.url || '/', 'http://localhost'), p = url.pathname, method = req.method;
+  const quick = /^\/t\/([A-Za-z0-9_-]+)$/.exec(p);
+  if (method === 'GET' && quick) {
+    limit(req, 'quick-link', 120);
+    const go = to => { res.writeHead(302, { Location: to, 'Cache-Control': 'no-store' }); res.end(); };
+    const ref = TOKEN_RE.test(quick[1]) ? await store.get('tlink:' + quick[1]) : null;
+    if (!ref?.id) return go('/?link=bad');
+    const out = await store.tx(async t => {
+      const d = await t.get('teacher:' + ref.id);
+      if (!d || d.linkToken !== quick[1]) return null;
+      if (d.blocked) return { blocked: true };
+      d.lastLoginAt = now(); await t.set('teacher:' + d.id, d);
+      return { id: d.id, epoch: d.epoch, quizDone: !!d.quiz };
+    });
+    if (!out) return go('/?link=bad');
+    if (out.blocked) return go('/?link=blocked');
+    setAuth(res, { role: 'teacher', id: out.id, epoch: out.epoch });
+    return go(out.quizDone ? '/?go=home' : '/?go=test');
+  }
   if (method === 'GET' && STATIC[p]) {
     const [file, type] = STATIC[p];
     res.writeHead(200, { 'Content-Type': type, 'Cache-Control': type.startsWith('image') ? 'public,max-age=86400' : 'no-cache', 'X-Content-Type-Options': 'nosniff' });
@@ -467,17 +497,33 @@ async function handle(req, res) {
       return send(res, 200, { teachers, owner, actor, directors, questions: testOf(cfg), customTest: Array.isArray(cfg.questions) && cfg.questions.length > 0, answerKeyCount: Object.keys(cfg.answerKeys || {}).length, legacyAttempts: cfg.legacyAttempts || [], hasLegacy: !!cfg.hasLegacy, storage: pool ? 'postgres' : 'local' });
     }
     const one = /^\/api\/supervisor\/teacher\/(\d+)$/.exec(p);
-    if (method === 'GET' && one) { const t = await store.get('teacher:' + one[1]); if (!t) err('not_found', 404); return send(res, 200, teacherView(t, cfg, { forSupervisor: true })); }
+    if (method === 'GET' && one) {
+      const doc = await store.tx(async t => { const d = await t.get('teacher:' + one[1]); if (!d) err('not_found', 404); if (await ensureLink(t, d)) await t.set('teacher:' + d.id, d); return d; });
+      return send(res, 200, teacherView(doc, cfg, { forSupervisor: true }));
+    }
+    if (method === 'GET' && p === '/api/supervisor/links') {
+      const list = await store.tx(async t => {
+        const out = [];
+        for (const d of await store.list('teacher:')) {
+          const fresh = await t.get('teacher:' + d.id); if (!fresh || fresh.blocked) continue;
+          if (await ensureLink(t, fresh)) await t.set('teacher:' + fresh.id, fresh);
+          out.push({ id: fresh.id, name: fresh.name, login: fresh.login, linkToken: fresh.linkToken });
+        }
+        return out.sort((a, b) => a.name.localeCompare(b.name));
+      });
+      return send(res, 200, { teachers: list });
+    }
     if (method === 'POST' && p === '/api/supervisor/teacher') {
       const b = await readBody(req, 5000), id = Number(b.id);
       return send(res, 200, await store.tx(async t => {
         const d = await t.get('teacher:' + id); if (!d) err('not_found', 404);
-        if (b.action === 'reset') { const pass = clean(b.password, 200); if (pass.length < 6) err('password_too_short'); d.passHash = hash(pass); d.epoch++; d.blocked = false; }
+        if (b.action === 'newlink') { await ensureLink(t, d, true); }
+        else if (b.action === 'reset') { const pass = clean(b.password, 200); if (pass.length < 6) err('password_too_short'); d.passHash = hash(pass); d.epoch++; d.blocked = false; }
         else if (b.action === 'block') { d.blocked = true; d.epoch++; }
         else if (b.action === 'unblock') d.blocked = false;
         else if (b.action === 'delete') {
           if (b.confirm !== 'DELETE') err('confirm_required');
-          await t.del('teacher:' + id); await t.del('login:' + d.login); await t.del('class:' + d.classCode); await t.delPrefix(`photo:${id}:`);
+          await t.del('teacher:' + id); await t.del('login:' + d.login); await t.del('class:' + d.classCode); if (d.linkToken) await t.del('tlink:' + d.linkToken); await t.delPrefix(`photo:${id}:`);
           return { ok: true };
         } else err('invalid_action');
         await t.set('teacher:' + id, d);
@@ -485,16 +531,19 @@ async function handle(req, res) {
       }));
     }
     if (method === 'POST' && p === '/api/supervisor/create-teacher') {
-      const b = await readBody(req, 5000), name = clean(b.name, 120), login = validLogin(b.login), pass = clean(b.password, 200);
+      // The password is optional: teachers usually enter with their personal QR link.
+      const b = await readBody(req, 5000), name = clean(b.name, 120), login = validLogin(b.login), pass = clean(b.password, 200) || crypto.randomBytes(12).toString('base64url');
       if (name.length < 3) err('name_required'); if (pass.length < 6) err('password_too_short');
       return send(res, 200, await store.tx(async t => {
         const c = await t.get('config'), tid = c.nextTeacherId++;
         if (!(await t.insert('login:' + login, { id: tid }))) err('login_taken', 409);
         const classCode = await uniqueClassCode(t);
         await t.set('class:' + classCode, { code: classCode, id: tid });
-        await t.set('teacher:' + tid, { id: tid, name, login, passHash: hash(pass), epoch: 1, createdAt: now(), lastLoginAt: null, blocked: false, classCode, round: 1, phase: 'setup', quiz: null, attempts: [], teams: makeTeams(7), nextMemberId: 1, history: [] });
+        const doc = { id: tid, name, login, passHash: hash(pass), epoch: 1, createdAt: now(), lastLoginAt: null, blocked: false, classCode, round: 1, phase: 'setup', quiz: null, attempts: [], teams: makeTeams(7), nextMemberId: 1, history: [] };
+        await ensureLink(t, doc);
+        await t.set('teacher:' + tid, doc);
         await t.set('config', c);
-        return { ok: true, id: tid };
+        return { ok: true, id: tid, linkToken: doc.linkToken };
       }));
     }
     if (method === 'POST' && p === '/api/supervisor/questions') {
@@ -609,8 +658,9 @@ async function handle(req, res) {
   }
   if (method === 'GET' && p === '/api/qr') {
     const code = /^\d{6}$/.test(url.searchParams.get('c') || '') ? url.searchParams.get('c') : '';
+    const tk = TOKEN_RE.test(url.searchParams.get('t') || '') ? url.searchParams.get('t') : '';
     const qr = require('qrcode');
-    const png = await qr.toBuffer(originOf(req) + (code ? '/?c=' + code : ''), { type: 'png', width: 420, margin: 2, color: { dark: '#1f1b5cff', light: '#ffffffff' } });
+    const png = await qr.toBuffer(originOf(req) + (tk ? '/t/' + tk : code ? '/?c=' + code : ''), { type: 'png', width: 420, margin: 2, color: { dark: '#1f1b5cff', light: '#ffffffff' } });
     res.writeHead(200, { 'Content-Type': 'image/png', 'Cache-Control': 'public,max-age=300' });
     return res.end(png);
   }
