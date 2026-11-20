@@ -7,8 +7,9 @@ const SUP = 'supervisor-test-password';
 const keys = Object.fromEntries(Array.from({ length: 10 }, (_, i) => [String(i + 1), { ru: ['Анализ ' + (i + 1), 'Расчёт ' + (i + 1), 'Вывод ' + (i + 1)], kk: ['Талдау ' + (i + 1), 'Есептеу ' + (i + 1), 'Қорытынды ' + (i + 1)] }]));
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-async function launch(t, { legacy, env = {} } = {}) {
+async function launch(t, { legacy, env = {}, v5 } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'relay-v5-'));
+  if (v5) fs.writeFileSync(path.join(dir, 'relay-v5.json'), JSON.stringify(v5));
   if (legacy) fs.writeFileSync(path.join(dir, 'relay-data.json'), JSON.stringify(legacy));
   const port = await new Promise((ok, no) => { const s = net.createServer(); s.listen(0, '127.0.0.1', () => { const p = s.address().port; s.close(() => ok(p)); }); s.on('error', no); });
   const base = `http://127.0.0.1:${port}`;
@@ -278,4 +279,18 @@ test('open pages get a live event right after a change', async t => {
   await waitFor(`"tid":${id}`);
   await call('boss', '/api/supervisor/questions', 'POST', { reset: true });
   await waitFor('"config":true');
+});
+
+test('teams get the standard names; existing default names are renamed once, chosen names kept', async t => {
+  const NAMES = ['Агенты роста', 'Қаржы қырандары', 'Cash Flow (денежный поток)', 'Тапқыр', 'TABYSVIBE', 'Индекс удачи', 'Золотой капитал'];
+  const team = (i, name) => ({ id: i + 1, officialId: i + 1, name, pin: '', members: [], submission: null });
+  const old = { id: 1, name: 'Старый учитель', login: 'old', passHash: 'x:y', epoch: 1, classCode: '111111', round: 1, phase: 'setup', quiz: null, attempts: [], nextMemberId: 1, history: [],
+    teams: [team(0, 'Команда 1'), team(1, 'Наши орлы'), ...Array.from({ length: 6 }, (_, k) => team(k + 2, 'Команда ' + (k + 3)))] };
+  const { call } = await launch(t, { v5: { config: { schema: 5, answerKeys: {}, supEpoch: 1, nextTeacherId: 2, legacyAttempts: [] }, 'teacher:1': old, 'login:old': { id: 1 }, 'class:111111': { code: '111111', id: 1 } } });
+  await call('boss', '/api/supervisor/login', 'POST', { login: 'admin', password: SUP });
+  const renamed = (await call('boss', '/api/supervisor/teacher/1')).data.teams.map(x => x.name);
+  assert.deepEqual(renamed, ['Агенты роста', 'Наши орлы', 'Cash Flow (денежный поток)', 'Тапқыр', 'TABYSVIBE', 'Индекс удачи', 'Золотой капитал', 'Команда 8']);
+  assert.equal((await call('boss', '/api/supervisor/teacher/1')).data.teams[0].case.ru.stages.length, 3, 'cases are unchanged');
+  const id = (await call('boss', '/api/supervisor/create-teacher', 'POST', { name: 'Новый учитель', login: 'fresh' })).data.id;
+  assert.deepEqual((await call('boss', '/api/supervisor/teacher/' + id)).data.teams.map(x => x.name), NAMES);
 });

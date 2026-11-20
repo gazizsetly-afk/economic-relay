@@ -144,6 +144,23 @@ function migrateLegacy(cfg, old) {
   return cfg;
 }
 
+// Standard team names (teams after the 7th are numbered). Cases stay as they are.
+const TEAM_NAMES = ['Агенты роста', 'Қаржы қырандары', 'Cash Flow (денежный поток)', 'Тапқыр', 'TABYSVIBE', 'Индекс удачи', 'Золотой капитал'];
+const defaultTeamName = i => TEAM_NAMES[i] || `Команда ${i + 1}`;
+// One time: give existing teams still called "Команда N" the standard name. Names a teacher chose are kept.
+async function applyTeamNames() {
+  const cfg = await store.get('config');
+  if (cfg?.teamNamesV1) return;
+  for (const doc of await store.list('teacher:')) {
+    await store.tx(async t => {
+      const d = await t.get('teacher:' + doc.id); if (!d) return;
+      let changed = false;
+      d.teams.forEach((x, i) => { if (x.name === `Команда ${i + 1}` && TEAM_NAMES[i] && !d.teams.some(y => y.name === TEAM_NAMES[i])) { x.name = TEAM_NAMES[i]; changed = true; } });
+      if (changed) await t.set('teacher:' + d.id, d);
+    });
+  }
+  await store.tx(async t => { const c = await t.get('config'); c.teamNamesV1 = true; await t.set('config', c); });
+}
 async function initStore() {
   if (process.env.DATABASE_URL) {
     const { Pool } = require('pg');
@@ -156,6 +173,7 @@ async function initStore() {
       await store.tx(async t => { if (!(await t.get('config'))) await t.set('config', migrateLegacy(defaultConfig(), old)); });
       console.log(old ? 'Created v5 storage; earlier lesson data kept untouched in economic_relay_state.' : 'Created v5 storage.');
     }
+    await applyTeamNames();
     console.log('Persistent PostgreSQL storage connected.');
   } else {
     fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -167,6 +185,7 @@ async function initStore() {
       local.set('config', migrateLegacy(defaultConfig(), old));
       writeLocal();
     }
+    await applyTeamNames();
     console.warn('Local JSON storage active. Add DATABASE_URL for real classes (Render Free restarts delete local data).');
   }
 }
@@ -236,7 +255,7 @@ async function ensureLink(t, doc, renew = false) {
 function makeTeams(count, old = []) {
   return Array.from({ length: count }, (_, i) => ({
     id: i + 1, officialId: (i % CASES.size) + 1,
-    name: old[i]?.name || `Команда ${i + 1}`,
+    name: old[i]?.name || defaultTeamName(i),
     pin: old[i]?.pin || encrypt(newPin()),
     ...(old[i]?.custom ? { custom: old[i].custom } : {}),
     members: [], submission: null,
