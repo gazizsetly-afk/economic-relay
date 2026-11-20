@@ -1,8 +1,8 @@
 {
   "name": "economic-relay",
-  "version": "5.0.0",
+  "version": "6.0.0",
   "private": true,
-  "description": "Bilingual (KK/RU) economics relay: personal teacher accounts with the 20-question test and their own classes, a supervisor dashboard, ten team cases with a 50-point rubric, PostgreSQL storage",
+  "description": "Bilingual (KK/RU) economics relay: teachers pick their team and take the test, the jury grades every team on a 50-point rubric",
   "scripts": {
     "start": "node server.js",
     "check": "node --check server.js",
@@ -12,7 +12,6 @@
     "node": ">=22.16.0 <23"
   },
   "dependencies": {
-    "pg": "^8.16.3",
-    "qrcode": "^1.5.4"
+    "pg": "^8.16.3"
   }
 }

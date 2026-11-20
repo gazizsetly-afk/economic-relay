@@ -1,52 +1,41 @@
-# Экономикалық эстафета / Экономическая эстафета — v5
+# Экономикалық эстафета / Экономическая эстафета — v6
 
-A bilingual (Kazakh / Russian) web app for a college economics competition.
+A bilingual (Kazakh / Russian) site for a college economics competition.
 
-## Who does what
+## How it works
 
-| Role | How they sign in | What they can do |
+| Who | How they enter | What they do |
 |---|---|---|
-| **Teacher** | Scans their **personal QR** (or opens their personal link `/t/…`) and lands straight on the test; can also sign in with login and password. Accounts are created only by the director (no self-registration) | Takes the 20-question test, gets a personal 6-digit **class code** + QR, picks how many teams (2–20; cases repeat after 10), opens the cases for their students, grades on the 50-point rubric, exports CSV, starts a new lesson |
-| **Supervisor** (руководитель / басшы) | "Вход руководителя" link in the footer, password = `TEACHER_PASSWORD` from Render | Sees every teacher: test score and level, class status, students, submissions, grades and answers; resets passwords, blocks/deletes accounts, creates teacher accounts, imports jury model answers, exports a CSV report |
-| **Student** | Scans the teacher's class QR (or opens the class link) and taps their team, or scans a **team QR** — then only types their name. No login, no PIN; the same name again returns to the same team | Sees only their team's case (3 stages, KK/RU). The first student in a team is the captain and sends one shared answer (text for each stage + optional photo) |
+| **Teacher** | Opens the site and taps **their team** (no registration, no password) | Takes the 20-question test once. Afterwards the page shows the score and **«Доступ к практическому кейсу открыт» / «Практикалық кейске қолжетімділік ашық»**. The case itself is handed out on paper. |
+| **Jury** | `/jury` page (the old `/director` link still works), login + password | Sees every team: whether the test is started/finished, score, level and answers. Grades each team on the 50-point rubric (stage 1 — 10, stage 2 — 15, stage 3 — 15, oral defense with A3 poster — 10) with a comment. Ranking, CSV export, reset a team's test, new round, edit the test questions, import private jury model answers. |
+| **Main administrator** | `/jury` with login `admin` and the Render `TEACHER_PASSWORD` | Everything the jury does, plus creating/removing jury logins (tab «Доступ жюри»). |
 
-The teacher's cases only open after that teacher has finished the test for the current lesson.
+Teams: Агенты роста, Қаржы қырандары, Cash Flow (денежный поток), Тапқыр, TABYSVIBE, Индекс удачи, Золотой капитал.
 
-- A teacher can **edit the case** of any of their teams (title + 3 stages, KK and RU) until that team submits, and restore the original. Jury model answers are not shown for edited cases.
-- Only the **director** can change the teacher test (Director → Teacher test): 5–40 questions, 2–5 options each, both languages. Results already taken keep the questions they were taken with.
-- **Director page:** `/director`. The main administrator signs in there with login `admin` and the `TEACHER_PASSWORD`; under **Director access** they create logins and passwords for the director or other inspectors. Those accounts see all teachers, students and grades and can edit the test, but cannot manage other director accounts.
-
-## One teacher = one team
-
-The director assigns each teacher one team (slot 1–20: Агенты роста, Қаржы қырандары, Cash Flow (денежный поток), Тапқыр, TABYSVIBE, Индекс удачи, Золотой капитал, then "Команда N") when creating the teacher or later under Details. A team can belong to only one teacher and can be changed while it has no students. The teacher takes the test and opens the case only for their own team; students on the teacher's link land in that team directly. The ranking is shared across all teachers. Classes that already had students before this change keep their teams until their next lesson.
-
-## Content (unchanged)
-
-- `teacher-test.json` — the 20 bilingual five-choice questions and answer key (answers are sent to a teacher only after they finish).
-- `official-team-assignments.json` — the 10 bilingual team cases, instructions and the 50-point rubric (analysis 10, calculation 15, decision 15, oral defense with A3 poster 10). **No model answers.**
-- Jury model answers stay out of GitHub. The supervisor imports the private `teacher-only-answers-economic-relay.json` once (Settings → Jury answers); teachers then see them while grading.
+Pages update live (Server-Sent Events): the jury sees a test finish the moment it happens.
 
 ## Files
 
 | File | Purpose |
 |---|---|
-| `server.js` | Node 22 HTTP API: accounts, sessions, classes, grading, supervisor, storage |
+| `server.js` | Node 22 HTTP API and storage |
 | `index.html`, `styles.css`, `app.js` | Responsive bilingual UI with the animated campus background (`images/campus.webp`) |
-| `MUGALIMGE_NUSKAULYK.md` | Kazakh instructions for teachers and the supervisor |
+| `teacher-test.json` | The original 20 bilingual questions (the jury can replace them in the UI) |
+| `official-team-assignments.json` | Case texts and rubric (kept for reference; cases are given on paper) |
 | `tests/` | `npm test` |
 
 ## Storage
 
-With `DATABASE_URL` set, data lives in PostgreSQL table `relay_kv` (one row per teacher, class code, login and photo). The table from v4 (`economic_relay_state`) is **not modified**: on first start v5 copies the jury answers, the supervisor's changed password and earlier open-test results from it, and the supervisor can download the whole old record (Settings → Data of the previous version). Without `DATABASE_URL` a local `data/relay-v5.json` file is used (development only).
+PostgreSQL table `relay_kv` when `DATABASE_URL` is set (one row per team and one config row), otherwise `data/relay-v5.json`. Data from earlier versions is not deleted: the v4 table `economic_relay_state` stays untouched (downloadable from Settings), and v5 rows (teacher accounts) simply stay unused. Jury model answers stay out of GitHub — import the private JSON in Settings.
 
-## Deployment to Render
+## Render
 
-Render deploys `main` automatically. Environment: `TEACHER_PASSWORD` (supervisor password), `SESSION_SECRET` (keep the existing value), `DATABASE_URL`, `NODE_ENV=production`. Optional: `PUBLIC_URL` for QR links, `SUPERVISOR_PASSWORD` to use a different supervisor password than `TEACHER_PASSWORD`.
+Render deploys `main` automatically. Environment: `TEACHER_PASSWORD` (admin password), `SESSION_SECRET` (keep the existing value), `DATABASE_URL`, `NODE_ENV=production`.
 
 ## Local development
 
 ```sh
 npm install
-TEACHER_PASSWORD=dev-pass node server.js   # http://localhost:3000
+TEACHER_PASSWORD=dev-pass node server.js   # http://localhost:3000, jury: /jury
 npm test
 ```
