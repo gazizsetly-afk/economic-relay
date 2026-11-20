@@ -16,6 +16,10 @@ The teacher's cases only open after that teacher has finished the test for the c
 - Only the **director** can change the teacher test (Director → Teacher test): 5–40 questions, 2–5 options each, both languages. Results already taken keep the questions they were taken with.
 - **Director page:** `/director`. The main administrator signs in there with login `admin` and the `TEACHER_PASSWORD`; under **Director access** they create logins and passwords for the director or other inspectors. Those accounts see all teachers, students and grades and can edit the test, but cannot manage other director accounts.
 
+## One teacher = one team
+
+The director assigns each teacher one team (slot 1–20: Агенты роста, Қаржы қырандары, Cash Flow (денежный поток), Тапқыр, TABYSVIBE, Индекс удачи, Золотой капитал, then "Команда N") when creating the teacher or later under Details. A team can belong to only one teacher and can be changed while it has no students. The teacher takes the test and opens the case only for their own team; students on the teacher's link land in that team directly. The ranking is shared across all teachers. Classes that already had students before this change keep their teams until their next lesson.
+
 ## Content (unchanged)
 
 - `teacher-test.json` — the 20 bilingual five-choice questions and answer key (answers are sent to a teacher only after they finish).

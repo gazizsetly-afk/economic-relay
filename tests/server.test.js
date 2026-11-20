@@ -29,9 +29,9 @@ async function launch(t, { legacy, env = {}, v5 } = {}) {
 }
 const correct = QUESTIONS.map(q => q.correct);
 // Only the director creates teacher accounts; then the teacher signs in.
-async function addTeacher(call, who, name, login, password) {
+async function addTeacher(call, who, name, login, password, slot) {
   await call('boss', '/api/supervisor/login', 'POST', { login: 'admin', password: SUP });
-  const r = await call('boss', '/api/supervisor/create-teacher', 'POST', { name, login, password });
+  const r = await call('boss', '/api/supervisor/create-teacher', 'POST', { name, login, password, slot });
   if (r.status !== 200) return r;
   return call(who, '/api/teacher/login', 'POST', { login, password });
 }
@@ -52,14 +52,16 @@ test('two teachers with their own accounts, classes, quiz and students; supervis
   assert.equal((await addTeacher(call, 't1', 'Ай', 'aigul', 'secret1')).status, 400);
   assert.equal((await addTeacher(call, 't1', 'Айгүл Серікова', 'Ай гүл', 'secret1')).data.error, 'login_format');
   assert.equal((await addTeacher(call, 't1', 'Айгүл Серікова', 'aigul', '123')).data.error, 'password_too_short');
-  assert.equal((await addTeacher(call, 't1', 'Айгүл Серікова', 'Aigul', 'secret1')).status, 200);
+  assert.equal((await addTeacher(call, 't1', 'Айгүл Серікова', 'Aigul', 'secret1', 1)).status, 200);
   assert.equal((await addTeacher(call, 't2', 'Иван Петров', 'aigul', 'secret2')).data.error, 'login_taken');
-  assert.equal((await addTeacher(call, 't2', 'Иван Петров', 'ivan', 'secret2')).status, 200);
+  assert.equal((await addTeacher(call, 't2', 'Иван Петров', 'ivan', 'secret2', 1)).data.error, 'team_taken');
+  assert.equal((await addTeacher(call, 't2', 'Иван Петров', 'ivan', 'secret2', 2)).status, 200);
   assert.equal((await call('t1', '/api/session')).data.role, 'teacher');
 
   let a = (await call('t1', '/api/teacher')).data, b = (await call('t2', '/api/teacher')).data;
   assert.match(a.classCode, /^\d{6}$/); assert.notEqual(a.classCode, b.classCode);
-  assert.equal(a.teams.length, 7); assert.equal(a.teams[0].case.ru.stages.length, 3);
+  assert.equal(a.teams.length, 1); assert.equal(a.teams[0].id, 1); assert.equal(a.teams[0].name, 'Агенты роста'); assert.equal(a.teams[0].case.ru.stages.length, 3);
+  assert.equal(b.teams[0].name, 'Қаржы қырандары'); assert.equal(a.slot, 1);
   assert.ok(a.questions.every(q => q.correct === undefined), 'answer key hidden before the test');
 
   // login again from another device
@@ -69,27 +71,26 @@ test('two teachers with their own accounts, classes, quiz and students; supervis
   // students can't join before the teacher's quiz + open
   assert.equal((await call('s1', '/api/class/' + a.classCode)).data.phase, 'setup');
   assert.equal((await call('t1', '/api/teacher/open', 'POST', {})).data.error, 'quiz_first');
-  assert.equal((await call('t1', '/api/teacher/teams', 'POST', { count: 1 })).data.error, 'team_count');
-  assert.equal((await call('t1', '/api/teacher/teams', 'POST', { count: 21 })).data.error, 'team_count');
-  assert.equal((await call('t1', '/api/teacher/teams', 'POST', { count: 13 })).status, 200);
-  const thirteen = (await call('t1', '/api/teacher')).data.teams;
-  assert.equal(thirteen.length, 13); assert.equal(thirteen[10].officialId, 1); assert.equal(thirteen[12].case.ru.title, thirteen[2].case.ru.title);
-  assert.equal((await call('t1', '/api/teacher/teams', 'POST', { count: 4 })).status, 200);
-  assert.equal((await call('t1', '/api/teacher')).data.teams.length, 4);
-  assert.equal((await call('t1', '/api/teacher/teams', 'POST', { count: 10 })).status, 200);
+  // the director assigns the team; teachers cannot change the number of teams
+  assert.equal((await call('t1', '/api/teacher/teams', 'POST', { count: 10 })).data.error, 'director_assigns');
+  assert.equal((await call('boss', '/api/supervisor/teacher', 'POST', { id: a.id, action: 'assign', slot: 2 })).data.error, 'team_taken');
+  assert.equal((await call('boss', '/api/supervisor/teacher', 'POST', { id: a.id, action: 'assign', slot: 4 })).status, 200);
+  assert.equal((await call('t1', '/api/teacher')).data.teams[0].name, 'Тапқыр');
+  assert.equal((await call('boss', '/api/supervisor/teacher', 'POST', { id: a.id, action: 'assign', slot: 1 })).status, 200);
   assert.equal((await call('t1', '/api/teacher/quiz', 'POST', { answers: Array(19).fill(0) })).status, 400);
   const quiz = await call('t1', '/api/teacher/quiz', 'POST', { answers: correct });
   assert.equal(quiz.data.score, 20);
   assert.equal((await call('t1', '/api/teacher/quiz', 'POST', { answers: correct })).status, 409);
   assert.equal((await call('t2', '/api/teacher/quiz', 'POST', { answers: Array(20).fill(0) })).status, 200);
   a = (await call('t1', '/api/teacher')).data;
-  assert.equal(a.teams.length, 10); assert.equal(a.questions[0].correct, QUESTIONS[0].correct);
+  assert.equal(a.teams.length, 1); assert.equal(a.questions[0].correct, QUESTIONS[0].correct);
   assert.equal((await call('t1', '/api/teacher/open', 'POST', {})).status, 200);
-  assert.equal((await call('t1', '/api/teacher/teams', 'POST', { count: 7 })).status, 409);
+  assert.equal((await call('boss', '/api/supervisor/teacher', 'POST', { id: a.id, action: 'assign', slot: 3 })).status, 200, 'still empty: can change');
+  assert.equal((await call('boss', '/api/supervisor/teacher', 'POST', { id: a.id, action: 'assign', slot: 1 })).status, 200);
 
   // students of teacher 1
   const info = (await call('s1', '/api/class/' + a.classCode)).data;
-  assert.equal(info.teacher, 'Айгүл Серікова'); assert.equal(info.teams.length, 10);
+  assert.equal(info.teacher, 'Айгүл Серікова'); assert.equal(info.teams.length, 1);
   assert.equal((await call('s1', '/api/class/000000')).status, 404);
   assert.equal((await call('s1', '/api/student/join', 'POST', { code: a.classCode, name: 'Алия', teamId: 99 })).data.error, 'team_required');
   assert.equal((await call('s1', '/api/student/join', 'POST', { code: a.classCode, name: 'А', teamId: 1 })).data.error, 'name_required');
@@ -100,7 +101,8 @@ test('two teachers with their own accounts, classes, quiz and students; supervis
   const again = (await call('s3', '/api/student/join', 'POST', { code: a.classCode, name: 'алия', teamId: 1 })).data;
   assert.equal(again.again, true); assert.equal(again.captain, true);
   assert.equal((await call('s3', '/api/student')).data.me.name, 'Алия');
-  assert.equal((await call('s4', '/api/student/join', 'POST', { code: a.classCode, name: 'Алия', teamId: 2 })).data.error, 'name_in_other_team');
+  assert.equal((await call('s4', '/api/student/join', 'POST', { code: a.classCode, name: 'Алия', teamId: 2 })).data.error, 'team_required', 'only the teacher\'s own team');
+  assert.equal((await call('boss', '/api/supervisor/teacher', 'POST', { id: a.id, action: 'assign', slot: 5 })).data.error, 'existing_responses');
   assert.equal((await call('s1', '/api/teacher')).status, 401);
   let me = (await call('s1', '/api/student')).data;
   assert.equal(me.team.case.kk.stages.length, 3); assert.equal(me.teacher, 'Айгүл Серікова');
@@ -119,6 +121,8 @@ test('two teachers with their own accounts, classes, quiz and students; supervis
   assert.equal((await call('t1', '/api/teacher/grade', 'POST', { teamId: 1, rubric: { analysis: 9, calculation: 14, decision: 12, defense: 8 }, feedback: 'Жақсы' })).data.score, 43);
   me = (await call('s2', '/api/student')).data;
   assert.equal(me.team.submission.score, 43); assert.equal(me.leaderboard[0].score, 43);
+  assert.deepEqual(me.leaderboard.map(x => x.name), ['Агенты роста', 'Қаржы қырандары'], 'one ranking across all teachers');
+  assert.equal(me.leaderboard[1].teacher, 'Иван Петров');
   const csv = (await call('t1', '/api/teacher/csv')).data; assert.ok(csv.includes('Жақсы') && csv.includes('Алия'));
 
   // supervisor
@@ -176,13 +180,13 @@ test('earlier single-cabinet data is kept and its useful parts are migrated', as
 
 test('teacher edits a team case; only the director edits the teacher test; director accounts with login and password', async t => {
   const { call } = await launch(t);
-  assert.equal((await addTeacher(call, 't', 'Айгүл Серікова', 'aigul', 'secret1')).status, 200);
+  assert.equal((await addTeacher(call, 't', 'Айгүл Серікова', 'aigul', 'secret1', 2)).status, 200);
   let me = (await call('t', '/api/teacher')).data;
   const custom = { ru: { title: 'Мой кейс', stages: [1, 2, 3].map(i => ({ heading: 'Этап ' + i, body: 'Текст ' + i })) }, kk: { title: 'Менің кейсім', stages: [1, 2, 3].map(i => ({ heading: i + '-кезең', body: 'Мәтін ' + i })) } };
   assert.equal((await call('t', '/api/teacher/case', 'POST', { teamId: 2, content: { ru: custom.ru } })).data.error, 'case_incomplete');
   assert.equal((await call('t', '/api/teacher/case', 'POST', { teamId: 2, content: custom })).status, 200);
   me = (await call('t', '/api/teacher')).data;
-  assert.equal(me.teams[1].case.kk.title, 'Менің кейсім'); assert.equal(me.teams[1].custom, true); assert.equal(me.teams[0].custom, false);
+  assert.equal(me.teams[0].case.kk.title, 'Менің кейсім'); assert.equal(me.teams[0].custom, true);
   // teacher cannot change the test
   assert.equal((await call('t', '/api/supervisor/questions', 'POST', { questions: [] })).status, 401);
 
@@ -216,13 +220,13 @@ test('teacher edits a team case; only the director edits the teacher test; direc
 
   // students see the edited case; once submitted, it can't be changed
   assert.equal((await call('t', '/api/teacher/open', 'POST', {})).status, 200);
-  assert.equal((await call('s', '/api/student/join', 'POST', { code: me.classCode, name: 'Ерлан', teamId: 2, pin: me.teams[1].pin })).status, 200);
+  assert.equal((await call('s', '/api/student/join', 'POST', { code: me.classCode, name: 'Ерлан', teamId: 2 })).status, 200);
   const st = (await call('s', '/api/student')).data;
   assert.equal(st.team.case.ru.title, 'Мой кейс');
   assert.equal((await call('s', '/api/student/submit', 'POST', { answers: ['a', 'b', 'c'] })).status, 200);
   assert.equal((await call('t', '/api/teacher/case', 'POST', { teamId: 2, reset: true })).data.error, 'already_submitted');
   // director sees it; access revoked after delete / password reset
-  assert.equal((await call('dir', '/api/supervisor/teacher/' + me.id)).data.teams[1].submission.answers[0], 'a');
+  assert.equal((await call('dir', '/api/supervisor/teacher/' + me.id)).data.teams[0].submission.answers[0], 'a');
   assert.equal((await call('own', '/api/supervisor/directors', 'POST', { action: 'reset', login: 'director', password: 'New-pass-2026' })).status, 200);
   assert.equal((await call('dir', '/api/supervisor')).status, 401);
   assert.equal((await call('dir', '/api/supervisor/login', 'POST', { login: 'director', password: 'New-pass-2026' })).status, 200);
@@ -283,14 +287,21 @@ test('open pages get a live event right after a change', async t => {
 
 test('teams get the standard names; existing default names are renamed once, chosen names kept', async t => {
   const NAMES = ['Агенты роста', 'Қаржы қырандары', 'Cash Flow (денежный поток)', 'Тапқыр', 'TABYSVIBE', 'Индекс удачи', 'Золотой капитал'];
-  const team = (i, name) => ({ id: i + 1, officialId: i + 1, name, pin: '', members: [], submission: null });
+  const team = (i, name, members = []) => ({ id: i + 1, officialId: i + 1, name, pin: '', members, submission: null });
   const old = { id: 1, name: 'Старый учитель', login: 'old', passHash: 'x:y', epoch: 1, classCode: '111111', round: 1, phase: 'setup', quiz: null, attempts: [], nextMemberId: 1, history: [],
-    teams: [team(0, 'Команда 1'), team(1, 'Наши орлы'), ...Array.from({ length: 6 }, (_, k) => team(k + 2, 'Команда ' + (k + 3)))] };
-  const { call } = await launch(t, { v5: { config: { schema: 5, answerKeys: {}, supEpoch: 1, nextTeacherId: 2, legacyAttempts: [] }, 'teacher:1': old, 'login:old': { id: 1 }, 'class:111111': { code: '111111', id: 1 } } });
+    teams: [team(0, 'Команда 1', [{ id: 1, name: 'Студент', isCaptain: true }]), team(1, 'Наши орлы'), ...Array.from({ length: 6 }, (_, k) => team(k + 2, 'Команда ' + (k + 3)))] };
+  const idle = { ...structuredClone(old), id: 2, login: 'idle', classCode: '222222', teams: [team(0, 'Команда 1')] };
+  const { call } = await launch(t, { v5: { config: { schema: 5, answerKeys: {}, supEpoch: 1, nextTeacherId: 3, legacyAttempts: [] }, 'teacher:1': old, 'login:old': { id: 1 }, 'class:111111': { code: '111111', id: 1 }, 'teacher:2': idle, 'login:idle': { id: 2 }, 'class:222222': { code: '222222', id: 2 } } });
   await call('boss', '/api/supervisor/login', 'POST', { login: 'admin', password: SUP });
   const renamed = (await call('boss', '/api/supervisor/teacher/1')).data.teams.map(x => x.name);
   assert.deepEqual(renamed, ['Агенты роста', 'Наши орлы', 'Cash Flow (денежный поток)', 'Тапқыр', 'TABYSVIBE', 'Индекс удачи', 'Золотой капитал', 'Команда 8']);
   assert.equal((await call('boss', '/api/supervisor/teacher/1')).data.teams[0].case.ru.stages.length, 3, 'cases are unchanged');
-  const id = (await call('boss', '/api/supervisor/create-teacher', 'POST', { name: 'Новый учитель', login: 'fresh' })).data.id;
-  assert.deepEqual((await call('boss', '/api/supervisor/teacher/' + id)).data.teams.map(x => x.name), NAMES);
+  // an unused old class switches to "1 teacher = 1 team" and waits for the director
+  const idleNow = (await call('boss', '/api/supervisor/teacher/2')).data; assert.equal(idleNow.slot, null); assert.equal(idleNow.teams.length, 0);
+  for (let i = 0; i < 7; i++) {
+    const id = (await call('boss', '/api/supervisor/create-teacher', 'POST', { name: 'Учитель ' + (i + 1), login: 'user' + i, slot: i + 1 })).data.id;
+    assert.deepEqual((await call('boss', '/api/supervisor/teacher/' + id)).data.teams.map(x => x.name), [NAMES[i]]);
+  }
+  const sup = (await call('boss', '/api/supervisor')).data;
+  assert.equal(sup.slots[4].name, 'TABYSVIBE'); assert.equal(sup.slots[4].teacher, 'Учитель 5');
 });

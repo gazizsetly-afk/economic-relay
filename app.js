@@ -18,6 +18,10 @@ const S = {
   teacherLogin: ['Вход преподавателя', 'Мұғалімнің кіруі'], noAccount: ['Нет аккаунта? Зарегистрируйтесь', 'Аккаунт жоқ па? Тіркеліңіз'], haveAccount: ['Уже есть аккаунт? Войти', 'Аккаунт бар ма? Кіру'],
   supervisorLogin: ['Вход для директора', 'Директорға кіру'], supervisorText: ['Директор видит всех преподавателей, их тесты, студентов и оценки. Главный администратор входит с логином admin.', 'Директор барлық мұғалімді, олардың тестін, студенттері мен бағаларын көреді. Бас әкімші admin логинімен кіреді.'],
   toHome: ['На главную', 'Басты бетке'],
+  yourTeamTitle: ['Ваша команда', 'Сіздің командаңыз'], noTeamYet: ['Директор ещё не назначил вам команду. Попросите директора закрепить за вами команду.', 'Директор сізге әлі команда бекітпеді. Директордан команда бекітуді сұраңыз.'],
+  assignTeam: ['Команда учителя', 'Мұғалімнің командасы'], assignHelp: ['1 учитель = 1 команда. Учитель открывает задание только своей команде. Сменить команду можно, пока в ней нет студентов.', '1 мұғалім = 1 команда. Мұғалім тапсырманы тек өз командасына ашады. Командада студент болмаса ғана ауыстыруға болады.'],
+  noTeamOpt: ['— не назначена —', '— бекітілмеген —'], takenBy: ['занята', 'бос емес'], saveTeam: ['Назначить', 'Бекіту'], colTeam: ['Команда', 'Команда'],
+  err_team_taken: ['Эта команда уже закреплена за другим учителем.', 'Бұл команда басқа мұғалімге бекітілген.'], err_no_team: ['Сначала директор должен назначить вам команду.', 'Алдымен директор сізге команда бекітуі керек.'], err_director_assigns: ['Команду назначает директор.', 'Команданы директор бекітеді.'],
   quickTitle: ['Быстрый вход по QR', 'QR арқылы жылдам кіру'], quickHelp: ['Личный QR этого преподавателя. Сканирует телефоном — и сразу попадает в свой кабинет на тест, без логина и пароля. Не показывайте его студентам.', 'Осы мұғалімнің жеке QR-коды. Телефонмен сканерлейді — логин мен құпиясөзсіз бірден өз кабинетіне, тестке кіреді. Студенттерге көрсетпеңіз.'],
   printCard: ['Распечатать карточку', 'Карточканы басып шығару'], newLink: ['Заменить QR', 'QR-ды ауыстыру'], newLinkConfirm: ['Создать новый QR? Старый QR и ссылка перестанут работать.', 'Жаңа QR жасау керек пе? Ескі QR мен сілтеме жұмыс істемейді.'],
   printAllQr: ['Распечатать QR всех преподавателей', 'Барлық мұғалімнің QR-ын басып шығару'], qrCardText: ['Отсканируйте телефоном — откроется ваш кабинет и тест.', 'Телефонмен сканерлеңіз — кабинетіңіз бен тест ашылады.'],
@@ -57,7 +61,7 @@ const S = {
   hello: ['Здравствуйте', 'Сәлеметсіз бе'], tabHome: ['Главная', 'Басты'], tabTest: ['Тест', 'Тест'], tabTeams: ['Команды', 'Командалар'], tabGrade: ['Оценки', 'Бағалау'], tabProfile: ['Профиль', 'Профиль'],
   lesson: ['Занятие', 'Сабақ'], phase_setup: ['Подготовка', 'Дайындық'], phase_open: ['Задания открыты', 'Тапсырмалар ашық'], phase_closed: ['Приём закрыт', 'Қабылдау жабық'],
   step1: ['Пройдите тест', 'Тест тапсырыңыз'], step1t: ['Тест по экономике и финансовой грамотности. Без теста задания не откроются.', 'Экономика және қаржылық сауаттылық бойынша тест. Тестсіз тапсырмалар ашылмайды.'],
-  step2: ['Подготовьте команды', 'Командаларды дайындаңыз'], step2t: ['Выберите количество команд (2–20) и при желании измените задания. QR команд можно распечатать и положить на столы.', 'Командалар санын таңдап (2–20), қажет болса тапсырмаларды өзгертіңіз. Команда QR-ларын басып шығарып, үстелге қоюға болады.'],
+  step2: ['Ваша команда', 'Сіздің командаңыз'], step2t: ['Выберите количество команд (2–20) и при желании измените задания. QR команд можно распечатать и положить на столы.', 'Командалар санын таңдап (2–20), қажет болса тапсырмаларды өзгертіңіз. Команда QR-ларын басып шығарып, үстелге қоюға болады.'],
   step3: ['Откройте задания', 'Тапсырмаларды ашыңыз'], step3t: ['Студенты сканируют QR класса или команды, пишут только имя — и они в команде.', 'Студенттер сынып не команда QR-ын сканерлеп, тек атын жазады — болды, командада.'],
   step4: ['Оцените команды', 'Командаларды бағалаңыз'], step4t: ['50 баллов: этапы 10 + 15 + 15 и устная защита 10.', '50 балл: кезеңдер 10 + 15 + 15 және ауызша қорғау 10.'],
   takeTest: ['Пройти тест', 'Тест тапсыру'], testDone: ['Тест пройден', 'Тест тапсырылды'], openTasks: ['Открыть задания студентам', 'Студенттерге тапсырма ашу'], closeTasks: ['Закрыть приём ответов', 'Жауап қабылдауды жабу'], reopen: ['Открыть снова', 'Қайта ашу'],
@@ -263,10 +267,10 @@ function classUI() {
   if (c.error) return card('', `<p class="note bad">${errText(c.error)}</p><button class="btn ghost" onclick="leaveClass()">← ${L('otherCode')}</button>`, 'narrow');
   let body;
   if (c.phase === 'open') {
-    const team = c.teams.find(t => t.id === pickedTeam);
+    const team = c.teams.find(t => t.id === pickedTeam) || (c.teams.length === 1 ? c.teams[0] : null);
     let saved = ''; try { saved = localStorage.getItem('economic-relay.name') || ''; } catch {}
     body = team
-      ? `<div class="picked"><span class="team-no">${team.id}</span><div class="grow"><small class="muted">${L('yourTeamIs')}</small><b>${esc(team.name)}</b></div><button type="button" class="link-btn" onclick="pickTeam(0)">${L('changeTeam')}</button></div>
+      ? `<div class="picked"><span class="team-no">${team.id}</span><div class="grow"><small class="muted">${L('yourTeamIs')}</small><b>${esc(team.name)}</b></div>${c.teams.length > 1 ? `<button type="button" class="link-btn" onclick="pickTeam(0)">${L('changeTeam')}</button>` : ''}</div>
         <form onsubmit="joinTeam(event)">${field(L('yourName'), 'jName', `required minlength="2" maxlength="90" autocomplete="name" value="${esc(saved)}"`)}
         <p class="muted small">★ ${L('joinHelp')}</p><button class="btn primary full big" type="submit">${L('joinGo')} →</button></form>`
       : `<p class="muted">${L('pickTeam')}</p><div class="team-pick">${c.teams.map(t => `<button type="button" onclick="pickTeam(${t.id})"><span class="team-no">${t.id}</span>${esc(t.name)}</button>`).join('')}</div>`;
@@ -285,13 +289,13 @@ async function joinTeam(e) {
   e.preventDefault();
   const name = $('jName').value.trim().replace(/\s+/g, ' ');
   try {
-    const r = await api('/student/join', 'POST', { code: classInfo.code, name, teamId: pickedTeam });
+    const r = await api('/student/join', 'POST', { code: classInfo.code, name, teamId: pickedTeam || (classInfo.teams.length === 1 ? classInfo.teams[0].id : 0) });
     try { localStorage.setItem('economic-relay.name', name); } catch {}
     pickedTeam = 0; await load(); if (r.again) toast(L('welcomeBack'));
   } catch (ex) { toast(errText(ex.message)); }
 }
 function rankingCard(list) {
-  const rows = (list || []).map((t, i) => `<div class="rank-row ${t.score != null && i < 3 ? 'top' + (i + 1) : ''}"><span class="rank-pos">${t.score != null ? (['🥇', '🥈', '🥉'][i] || i + 1) : '·'}</span><span class="rank-name">${esc(t.name)}<small>${t.members} 👤 ${t.submitted ? '· ✓' : ''}</small></span><b>${t.score ?? '—'}<small>/50</small></b></div>`).join('');
+  const rows = (list || []).map((t, i) => `<div class="rank-row ${t.score != null && i < 3 ? 'top' + (i + 1) : ''}"><span class="rank-pos">${t.score != null ? (['🥇', '🥈', '🥉'][i] || i + 1) : '·'}</span><span class="rank-name">${esc(t.name)}<small>${t.teacher ? '👩‍🏫 ' + esc(t.teacher) + ' · ' : ''}${t.members} 👤 ${t.submitted ? '· ✓' : ''}</small></span><b>${t.score ?? '—'}<small>/50</small></b></div>`).join('');
   return card('🏆 ' + L('ranking'), (list || []).some(t => t.score != null) ? rows : `<p class="muted">${L('rankingEmpty')}</p>${rows}`, 'ranking');
 }
 
@@ -363,8 +367,10 @@ function teacherHome() {
   const d = data, students = d.teams.reduce((n, t) => n + t.members.length, 0), sub = d.teams.filter(t => t.submission).length, graded = d.teams.filter(t => t.submission?.score != null).length;
   const steps = [
     [d.quiz ? 'done' : 'now', L('step1'), L('step1t'), d.quiz ? `${pill('✓ ' + L('testDone') + ': ' + d.quiz.score + '/' + d.quiz.total, 'green')}` : `<button class="btn primary small" onclick="go('test')">🧠 ${L('takeTest')}</button>`],
-    [d.phase !== 'setup' ? 'done' : d.quiz ? 'now' : '', L('step2'), L('step2t'), `<button class="btn ghost small" onclick="go('teams')">👥 ${L('goTeams')} (${d.teams.length})</button>`],
-    [d.phase === 'open' ? 'now' : d.phase === 'closed' ? 'done' : '', L('step3'), L('step3t'), d.phase === 'open' ? `<button class="btn soft-red small" onclick="closeTasks()">◼ ${L('closeTasks')}</button>` : `<button class="btn green small" ${d.quiz ? '' : 'disabled'} onclick="openTasks()">🔓 ${d.phase === 'closed' ? L('reopen') : L('openTasks')}</button>`],
+    d.slot !== undefined
+      ? [d.teams.length ? 'done' : 'now', L('step2'), d.teams.length ? `<b>${esc(d.teams[0].name)}</b> · ${esc((d.teams[0].case?.[lang] || d.teams[0].case?.ru)?.title || '')}` : L('noTeamYet'), d.teams.length ? `<button class="btn ghost small" onclick="go('teams')">👥 ${L('goTeams')}</button>` : '']
+      : [d.phase !== 'setup' ? 'done' : d.quiz ? 'now' : '', L('step2'), L('step2t'), `<button class="btn ghost small" onclick="go('teams')">👥 ${L('goTeams')} (${d.teams.length})</button>`],
+    [d.phase === 'open' ? 'now' : d.phase === 'closed' ? 'done' : '', L('step3'), L('step3t'), d.phase === 'open' ? `<button class="btn soft-red small" onclick="closeTasks()">◼ ${L('closeTasks')}</button>` : `<button class="btn green small" ${d.quiz && d.teams.length ? '' : 'disabled'} onclick="openTasks()">🔓 ${d.phase === 'closed' ? L('reopen') : L('openTasks')}</button>`],
     [graded && graded === sub && sub ? 'done' : sub ? 'now' : '', L('step4'), L('step4t'), `<button class="btn ghost small" ${sub ? '' : 'disabled'} onclick="go('grade')">✎ ${L('goGrade')} (${graded}/${sub})</button>`],
   ];
   const link = location.origin + '/?c=' + d.classCode;
@@ -418,7 +424,8 @@ async function finishQuiz() {
 
 function teamsUI() {
   const d = data, locked = d.phase !== 'setup' || d.teams.some(t => t.members.length);
-  return `${card('⚙ ' + L('teamCount'), `<p class="muted">${L('teamCountHelp')}</p><div class="count-picker"><button type="button" class="btn ghost" ${locked || d.teams.length <= 2 ? 'disabled' : ''} onclick="stepCount(-1)" aria-label="−">−</button><input class="input count-input" id="teamCountIn" type="number" min="2" max="20" value="${d.teams.length}" ${locked ? 'disabled' : ''} aria-label="${L('teamCount')}"><button type="button" class="btn ghost" ${locked || d.teams.length >= 20 ? 'disabled' : ''} onclick="stepCount(1)" aria-label="+">+</button><button type="button" class="btn primary" ${locked ? 'disabled' : ''} onclick="applyCount()">${L('apply')}</button></div><div class="seg mt">${[5, 7, 10, 15].map(n => `<button type="button" class="${d.teams.length === n ? 'on' : ''}" ${locked ? 'disabled' : ''} onclick="setCount(${n})">${n}</button>`).join('')}</div>${d.teams.length > 10 ? `<p class="note mt">${L('casesRepeat')}</p>` : ''}<button class="btn ghost small mt" onclick="printPins()">🖨 ${L('printPins')}</button>`)}
+  if (d.slot !== undefined && !d.teams.length) return card('👥 ' + L('yourTeamTitle'), `<p class="note">${L('noTeamYet')}</p>`);
+  return `${d.slot !== undefined ? '' : card('⚙ ' + L('teamCount'), `<p class="muted">${L('teamCountHelp')}</p><div class="count-picker"><button type="button" class="btn ghost" ${locked || d.teams.length <= 2 ? 'disabled' : ''} onclick="stepCount(-1)" aria-label="−">−</button><input class="input count-input" id="teamCountIn" type="number" min="2" max="20" value="${d.teams.length}" ${locked ? 'disabled' : ''} aria-label="${L('teamCount')}"><button type="button" class="btn ghost" ${locked || d.teams.length >= 20 ? 'disabled' : ''} onclick="stepCount(1)" aria-label="+">+</button><button type="button" class="btn primary" ${locked ? 'disabled' : ''} onclick="applyCount()">${L('apply')}</button></div><div class="seg mt">${[5, 7, 10, 15].map(n => `<button type="button" class="${d.teams.length === n ? 'on' : ''}" ${locked ? 'disabled' : ''} onclick="setCount(${n})">${n}</button>`).join('')}</div>${d.teams.length > 10 ? `<p class="note mt">${L('casesRepeat')}</p>` : ''}<button class="btn ghost small mt" onclick="printPins()">🖨 ${L('printPins')}</button>`)}
   <div class="team-grid">${d.teams.map(t => { const c = t.case?.[lang] || t.case?.ru; return `<section class="card team reveal">
     <div class="team-head"><span class="team-no">${t.id}</span><input class="input bare" value="${esc(t.name)}" maxlength="60" onchange="renameTeam(${t.id}, this.value)" aria-label="${L('teamName')}"></div>
     <p class="muted small">📚 ${esc(c?.title || '')} ${t.custom ? pill('✏ ' + L('edited'), 'amber') : ''}</p>
@@ -509,16 +516,21 @@ function supervisorUI() {
   ${detail ? '' : `<nav class="tabs reveal">${tabs.map(([id, ic, label]) => `<button type="button" class="${tab === id ? 'on' : ''}" onclick="go('${id}')"><span>${ic}</span>${label}</button>`).join('')}</nav>`}
   ${detail ? teacherDetailUI() : tab === 'settings' ? supSettingsUI() : tab === 'testedit' ? testEditorUI() : tab === 'access' ? accessUI() : supTeachersUI()}`;
 }
+function slotOptions(current, selfId) {
+  const slots = data.slots || [];
+  const shown = slots.filter(x => x.slot <= 7 || x.teacher || x.slot === current || x.slot <= Math.max(7, ...slots.filter(y => y.teacher).map(y => y.slot)) + 1);
+  return `<option value="">${L('noTeamOpt')}</option>` + shown.map(x => { const taken = x.teacherId && x.teacherId !== selfId; return `<option value="${x.slot}" ${x.slot === current ? 'selected' : ''} ${taken ? 'disabled' : ''}>${x.slot}. ${esc(x.name)}${taken ? ` — ${L('takenBy')}: ${esc(x.teacher)}` : ''}</option>`; }).join('');
+}
 function supTeachersUI() {
   const list = data.teachers, passed = list.filter(t => t.lastAttempt), avg = passed.length ? Math.round(passed.reduce((a, t) => a + t.lastAttempt.score / t.lastAttempt.total * 100, 0) / passed.length) + '%' : '—';
   const q = search.trim().toLowerCase(), shown = q ? list.filter(t => t.name.toLowerCase().includes(q) || t.login.includes(q)) : list;
   return `<div class="tiles reveal"><div class="tile"><b>${list.length}</b><span>${L('sTeachers')}</span></div><div class="tile"><b>${passed.length}</b><span>${L('sPassed')}</span></div><div class="tile"><b>${avg}</b><span>${L('sAvg')}</span></div><div class="tile"><b>${list.filter(t => t.phase === 'open').length}</b><span>${L('sOpen')}</span></div><div class="tile"><b>${list.reduce((n, t) => n + t.students, 0)}</b><span>${L('sStudents')}</span></div></div>
-  <section class="card reveal add-teacher"><details data-k="addTeacher"${list.length ? '' : ' open'}><summary class="btn primary">➕ ${L('createTitle')}</summary><p class="muted mt">${L('createHelp')}</p><form class="add-grid" onsubmit="createTeacher(event)">${field(L('fullName'), 'cName', 'required minlength="3" maxlength="120"')}${field(L('login'), 'cLogin', 'required minlength="3" maxlength="40" autocapitalize="none" spellcheck="false"', L('loginHint'))}${field(L('passOptional'), 'cPass', 'minlength="6" autocomplete="new-password"', L('passOptionalHint'))}<button class="btn green" type="submit">✓ ${L('createAccount')}</button></form></details><button class="btn ghost small mt" onclick="printAllQr()">🖨 ${L('printAllQr')}</button></section>
+  <section class="card reveal add-teacher"><details data-k="addTeacher"${list.length ? '' : ' open'}><summary class="btn primary">➕ ${L('createTitle')}</summary><p class="muted mt">${L('createHelp')}</p><form class="add-grid" onsubmit="createTeacher(event)">${field(L('fullName'), 'cName', 'required minlength="3" maxlength="120"')}${field(L('login'), 'cLogin', 'required minlength="3" maxlength="40" autocapitalize="none" spellcheck="false"', L('loginHint'))}<label class="field"><span>${L('colTeam')}</span><select class="input" id="cSlot">${slotOptions(null, null)}</select></label>${field(L('passOptional'), 'cPass', 'minlength="6" autocomplete="new-password"', L('passOptionalHint'))}<button class="btn green" type="submit">✓ ${L('createAccount')}</button></form></details><button class="btn ghost small mt" onclick="printAllQr()">🖨 ${L('printAllQr')}</button></section>
   <section class="card reveal"><div class="section-head"><input class="input search" id="searchBox" placeholder="🔎 ${L('search')}" value="${esc(search)}" oninput="search=this.value;filterTeachers()"><a class="btn ghost small" href="/api/supervisor/csv" download>↓ ${L('downloadCsv')}</a></div>
-  ${list.length ? `<div class="table-wrap"><table class="table"><thead><tr><th>${L('colTeacher')}</th><th>${L('colTest')}</th><th>${L('colClass')}</th><th>${L('colTeams')}</th><th>${L('colLast')}</th><th></th></tr></thead><tbody id="teacherRows">${teacherRows(shown)}</tbody></table></div>` : `<p class="muted">${L('noTeachers')}</p>`}</section>`;
+  ${list.length ? `<div class="table-wrap"><table class="table"><thead><tr><th>${L('colTeacher')}</th><th>${L('colTeam')}</th><th>${L('colTest')}</th><th>${L('colClass')}</th><th>${L('colTeams')}</th><th>${L('colLast')}</th><th></th></tr></thead><tbody id="teacherRows">${teacherRows(shown)}</tbody></table></div>` : `<p class="muted">${L('noTeachers')}</p>`}</section>`;
 }
 function teacherRows(rows) {
-  return rows.map(t => `<tr onclick="openTeacher(${t.id})"><td><b>${esc(t.name)}</b><small>${esc(t.login)}${t.blocked ? ' · ⛔ ' + L('blocked') : ''}</small></td>
+  return rows.map(t => `<tr onclick="openTeacher(${t.id})"><td><b>${esc(t.name)}</b><small>${esc(t.login)}${t.blocked ? ' · ⛔ ' + L('blocked') : ''}</small></td><td>${t.teamName ? `<b>${esc(t.teamName)}</b>` : t.slot === null ? `<span class="pill amber">${L('noTeamOpt')}</span>` : `<small>${t.teams} ${L('statTeams')}</small>`}</td>
     <td>${t.lastAttempt ? `<b>${t.lastAttempt.score}</b>/${t.lastAttempt.total}<small>${L('lv_' + t.lastAttempt.level)}</small>` : `<span class="muted">${L('notTaken')}</span>`}</td>
     <td>${phasePill(t.phase)}<small>${esc(t.classCode)} · ${L('lesson')} ${t.round}</small></td>
     <td>${t.students} 👤 · ${t.submitted}/${t.teams} ✓<small>${t.avgTeamScore != null ? '⌀ ' + t.avgTeamScore + '/50' : ''}</small></td>
@@ -535,6 +547,7 @@ function teacherDetailUI() {
       <div class="btn-row"><button class="btn ghost small" onclick="supAct('reset')">🔑 ${L('resetPassword')}</button><button class="btn ghost small" onclick="supAct('${d.blocked ? 'unblock' : 'block'}')">${d.blocked ? '✓ ' + L('unblock') : '⛔ ' + L('block')}</button><button class="btn soft-red small" onclick="supAct('delete')">🗑 ${L('deleteTeacher')}</button></div>`)}
     ${quickCard(d)}
   </div>
+  ${card('👥 ' + L('assignTeam'), `<p class="muted small">${L('assignHelp')}</p><div class="row-form"><label class="field"><span>${L('colTeam')}</span><select class="input" id="assignSlot">${slotOptions(d.slot ?? null, d.id)}</select></label><button class="btn primary" onclick="assignTeam()">${L('saveTeam')}</button></div>`)}
   <div class="split mt">
     ${card('🧠 ' + L('attempts'), d.attempts.length ? `<ul class="attempts">${d.attempts.map(a => `<li><b>${a.score}/${a.total}</b> <span>${L('lv_' + a.level)}</span><small>${L('lesson')} ${a.round} · ${fmtDate(a.finishedAt)}</small></li>`).join('')}</ul>` : `<p class="muted">${L('notTaken')}</p>`)}
   </div>
@@ -556,6 +569,7 @@ function printQrCards(list) {
   w.document.close();
 }
 async function printAllQr() { try { const r = await api('/supervisor/links'); if (r.teachers.length) printQrCards(r.teachers); else toast(L('noTeachers')); } catch (e) { toast(errText(e.message)); } }
+async function assignTeam() { const v = $('assignSlot').value; await act('/supervisor/teacher', { id: detail.id, action: 'assign', slot: v ? Number(v) : null }); }
 async function supAct(action) {
   const body = { id: detail.id, action };
   if (action === 'reset') { const p = prompt(L('resetPrompt')); if (!p) return; if (p.length < 6) { toast(errText('password_too_short')); return; } body.password = p; }
@@ -612,7 +626,7 @@ async function directorAct(action, login) {
   else if (!confirm(L('directorDelete'))) return;
   await act('/supervisor/directors', body);
 }
-async function createTeacher(e) { e.preventDefault(); const r = await act('/supervisor/create-teacher', { name: $('cName').value.trim(), login: $('cLogin').value.trim(), password: $('cPass').value }, L('teacherCreated')); if (r) { e.target.reset(); await openTeacher(r.id); } }
+async function createTeacher(e) { e.preventDefault(); const r = await act('/supervisor/create-teacher', { name: $('cName').value.trim(), login: $('cLogin').value.trim(), password: $('cPass').value, slot: $('cSlot').value ? Number($('cSlot').value) : null }, L('teacherCreated')); if (r) { e.target.reset(); await openTeacher(r.id); } }
 async function importKeys(input) {
   const f = input.files[0]; if (!f) return;
   try { const json = JSON.parse(await f.text()); await act('/supervisor/answers', { answerKeys: json.answerKeys || json }); }
@@ -642,9 +656,9 @@ let live = false, lastRefresh = 0, refreshTimer = null;
 function relevant(ev) {
   const role = session?.role;
   if (role === 'supervisor') return true;
-  if (role === 'teacher') return !!ev.config || ev.tid === data?.id;
-  if (role === 'student') return ev.tid === data?.tid;
-  if (!role && classInfo) return ev.tid === classInfo.tid;
+  if (role === 'teacher') return !!ev.config || !!ev.tid;
+  if (role === 'student') return !!ev.tid;
+  if (!role && classInfo) return !!ev.tid;
   return false;
 }
 function canRefresh() {

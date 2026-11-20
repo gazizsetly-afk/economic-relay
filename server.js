@@ -161,6 +161,18 @@ async function applyTeamNames() {
   }
   await store.tx(async t => { const c = await t.get('config'); c.teamNamesV1 = true; await t.set('config', c); });
 }
+// One time: switch to "1 teacher = 1 team". Teachers with no students yet wait for the director to assign a team;
+// a class already in use keeps its teams until its next lesson.
+async function applySlots() {
+  for (const doc of await store.list('teacher:')) {
+    if (doc.slot !== undefined) continue;
+    await store.tx(async t => {
+      const d = await t.get('teacher:' + doc.id); if (!d || d.slot !== undefined) return;
+      if (d.teams.some(x => x.members.length || x.submission)) return;
+      d.slot = null; d.teams = []; await t.set('teacher:' + d.id, d);
+    });
+  }
+}
 async function initStore() {
   if (process.env.DATABASE_URL) {
     const { Pool } = require('pg');
@@ -173,7 +185,7 @@ async function initStore() {
       await store.tx(async t => { if (!(await t.get('config'))) await t.set('config', migrateLegacy(defaultConfig(), old)); });
       console.log(old ? 'Created v5 storage; earlier lesson data kept untouched in economic_relay_state.' : 'Created v5 storage.');
     }
-    await applyTeamNames();
+    await applyTeamNames(); await applySlots();
     console.log('Persistent PostgreSQL storage connected.');
   } else {
     fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -185,7 +197,7 @@ async function initStore() {
       local.set('config', migrateLegacy(defaultConfig(), old));
       writeLocal();
     }
-    await applyTeamNames();
+    await applyTeamNames(); await applySlots();
     console.warn('Local JSON storage active. Add DATABASE_URL for real classes (Render Free restarts delete local data).');
   }
 }
@@ -261,6 +273,25 @@ function makeTeams(count, old = []) {
     members: [], submission: null,
   }));
 }
+// "1 teacher = 1 team": the director gives each teacher one team slot (name + case).
+const slotOk = v => Number.isInteger(v) && v >= 1 && v <= MAX_TEAMS;
+function makeTeam(slot, old) {
+  return { id: slot, officialId: ((slot - 1) % CASES.size) + 1, name: old?.name || defaultTeamName(slot - 1), pin: '', ...(old?.custom ? { custom: old.custom } : {}), members: [], submission: null };
+}
+const hasSlots = t => t.slot !== undefined;
+async function slotTaken(slot, exceptId) {
+  return (await store.list('teacher:')).find(x => x.slot === slot && x.id !== exceptId) || null;
+}
+// One ranking for the whole competition: every assigned teacher's team.
+async function globalBoard() {
+  const rows = [];
+  for (const t of await store.list('teacher:')) {
+    if (!slotOk(t.slot) || t.blocked) continue;
+    for (const x of t.teams) rows.push({ id: x.id, name: x.name, teacher: t.name, members: x.members.length, submitted: !!x.submission, score: teamScore(x) });
+  }
+  return rows.sort((a, b) => (b.score ?? -1) - (a.score ?? -1) || a.id - b.id);
+}
+const boardFor = async t => (hasSlots(t) ? globalBoard() : leaderboard(t));
 async function uniqueClassCode(t) {
   for (let i = 0; i < 40; i++) { const code = String(crypto.randomInt(100000, 1000000)); if (await t.insert('class:' + code, { code })) return code; }
   err('server_busy', 503);
@@ -272,10 +303,10 @@ function leaderboard(t) {
     .sort((a, b) => (b.score ?? -1) - (a.score ?? -1) || a.id - b.id);
 }
 function quizPublic(cfg) { return testOf(cfg).map(q => ({ id: q.id, ru: q.ru, kk: q.kk, options_ru: q.options_ru, options_kk: q.options_kk })); }
-function teacherView(t, cfg, { forSupervisor = false } = {}) {
+function teacherView(t, cfg, { forSupervisor = false, board = null } = {}) {
   return {
     id: t.id, name: t.name, login: t.login, createdAt: t.createdAt, lastLoginAt: t.lastLoginAt, blocked: !!t.blocked,
-    classCode: t.classCode, round: t.round, phase: t.phase,
+    classCode: t.classCode, round: t.round, phase: t.phase, slot: hasSlots(t) ? t.slot : undefined,
     quiz: t.quiz, attempts: t.attempts || [],
     questions: t.quiz ? (t.quiz.questions || QUESTIONS) : quizPublic(cfg),
     teams: t.teams.map(x => ({
@@ -283,7 +314,7 @@ function teacherView(t, cfg, { forSupervisor = false } = {}) {
       members: x.members, case: caseContent(x), custom: !!x.custom,
       submission: x.submission ? { ...x.submission } : null,
     })),
-    leaderboard: leaderboard(t), history: t.history || [],
+    leaderboard: board || leaderboard(t), history: t.history || [],
     answerKeys: cfg.answerKeys || {}, testSize: testOf(cfg).length,
     ...(forSupervisor ? { linkToken: t.linkToken || null } : { instructions: OFFICIAL.instructions }),
   };
@@ -294,7 +325,7 @@ function teacherSummary(t) {
   const last = (t.attempts || [])[0];
   return {
     id: t.id, name: t.name, login: t.login, blocked: !!t.blocked, createdAt: t.createdAt, lastLoginAt: t.lastLoginAt,
-    phase: t.phase, round: t.round, classCode: t.classCode, teams: t.teams.length,
+    phase: t.phase, round: t.round, classCode: t.classCode, teams: t.teams.length, slot: hasSlots(t) ? t.slot : undefined, teamName: hasSlots(t) && t.teams[0] ? t.teams[0].name : null,
     students: t.teams.reduce((n, x) => n + x.members.length, 0), submitted: sub, graded,
     avgTeamScore: scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length * 10) / 10 : null,
     quizScore: t.quiz?.score ?? null, lastAttempt: last || null, attempts: (t.attempts || []).length,
@@ -437,7 +468,7 @@ async function handle(req, res) {
       await t.set('teacher:' + doc.id, doc);
       return out;
     });
-    if (method === 'GET' && p === '/api/teacher') { const t = await needTeacher(req), cfg = await store.get('config'); return send(res, 200, teacherView(t, cfg)); }
+    if (method === 'GET' && p === '/api/teacher') { const t = await needTeacher(req), cfg = await store.get('config'); return send(res, 200, teacherView(t, cfg, { board: await boardFor(t) })); }
     if (method === 'POST' && p === '/api/teacher/quiz') {
       const b = await readBody(req, 10000);
       return send(res, 200, await mutate(async (d, _t, cfg) => {
@@ -454,6 +485,7 @@ async function handle(req, res) {
       const b = await readBody(req, 5000), count = Number(b.count);
       if (!Number.isInteger(count) || count < MIN_TEAMS || count > MAX_TEAMS) err('team_count');
       return send(res, 200, await mutate(async d => {
+        if (hasSlots(d)) err('director_assigns', 403);
         if (d.phase !== 'setup') err('setup_only', 409);
         if (d.teams.some(x => x.members.length || x.submission)) err('existing_responses', 409);
         d.teams = makeTeams(count, d.teams);
@@ -479,7 +511,7 @@ async function handle(req, res) {
       }));
     }
     if (method === 'POST' && p === '/api/teacher/open') {
-      return send(res, 200, await mutate(async d => { if (!d.quiz) err('quiz_first', 409); if (d.phase === 'open') err('invalid_phase', 409); d.phase = 'open'; d.openedAt = now(); return { ok: true }; }));
+      return send(res, 200, await mutate(async d => { if (!d.teams.length) err('no_team', 409); if (!d.quiz) err('quiz_first', 409); if (d.phase === 'open') err('invalid_phase', 409); d.phase = 'open'; d.openedAt = now(); return { ok: true }; }));
     }
     if (method === 'POST' && p === '/api/teacher/close') {
       return send(res, 200, await mutate(async d => { if (d.phase !== 'open') err('invalid_phase', 409); d.phase = 'closed'; return { ok: true }; }));
@@ -491,6 +523,7 @@ async function handle(req, res) {
         await t.delPrefix(`photo:${d.id}:`);
         d.round++; d.phase = 'setup'; d.quiz = null;
         for (const x of d.teams) { x.members = []; x.submission = null; }
+        if (!hasSlots(d)) { d.slot = null; d.teams = []; }
         return { ok: true };
       }));
     }
@@ -538,12 +571,13 @@ async function handle(req, res) {
     if (method === 'GET' && p === '/api/supervisor') {
       const teachers = (await store.list('teacher:')).map(teacherSummary).sort((a, b) => a.name.localeCompare(b.name));
       const directors = owner ? Object.values(cfg.directors || {}).map(d => ({ login: d.login, name: d.name, createdAt: d.createdAt, lastLoginAt: d.lastLoginAt || null })) : null;
-      return send(res, 200, { teachers, owner, actor, directors, questions: testOf(cfg), customTest: Array.isArray(cfg.questions) && cfg.questions.length > 0, answerKeyCount: Object.keys(cfg.answerKeys || {}).length, legacyAttempts: cfg.legacyAttempts || [], hasLegacy: !!cfg.hasLegacy, storage: pool ? 'postgres' : 'local' });
+      const slots = Array.from({ length: MAX_TEAMS }, (_, i) => ({ slot: i + 1, name: defaultTeamName(i), teacher: teachers.find(x => x.slot === i + 1)?.name || null, teacherId: teachers.find(x => x.slot === i + 1)?.id || null }));
+      return send(res, 200, { teachers, slots, owner, actor, directors, questions: testOf(cfg), customTest: Array.isArray(cfg.questions) && cfg.questions.length > 0, answerKeyCount: Object.keys(cfg.answerKeys || {}).length, legacyAttempts: cfg.legacyAttempts || [], hasLegacy: !!cfg.hasLegacy, storage: pool ? 'postgres' : 'local' });
     }
     const one = /^\/api\/supervisor\/teacher\/(\d+)$/.exec(p);
     if (method === 'GET' && one) {
       const doc = await store.tx(async t => { const d = await t.get('teacher:' + one[1]); if (!d) err('not_found', 404); if (await ensureLink(t, d)) await t.set('teacher:' + d.id, d); return d; });
-      return send(res, 200, teacherView(doc, cfg, { forSupervisor: true }));
+      return send(res, 200, teacherView(doc, cfg, { forSupervisor: true, board: await boardFor(doc) }));
     }
     if (method === 'GET' && p === '/api/supervisor/links') {
       const list = await store.tx(async t => {
@@ -562,6 +596,14 @@ async function handle(req, res) {
       return send(res, 200, await store.tx(async t => {
         const d = await t.get('teacher:' + id); if (!d) err('not_found', 404);
         if (b.action === 'newlink') { await ensureLink(t, d, true); }
+        else if (b.action === 'assign') {
+          const slot = b.slot === null || b.slot === '' || b.slot === 0 ? null : Number(b.slot);
+          if (slot !== null && !slotOk(slot)) err('team_count');
+          if (d.teams.some(x => x.members.length || x.submission)) err('existing_responses', 409);
+          if (slot !== null) { const other = await slotTaken(slot, d.id); if (other) err('team_taken', 409); }
+          const keep = d.slot === slot ? d.teams[0] : null;
+          d.slot = slot; d.teams = slot ? [makeTeam(slot, keep)] : [];
+        }
         else if (b.action === 'reset') { const pass = clean(b.password, 200); if (pass.length < 6) err('password_too_short'); d.passHash = hash(pass); d.epoch++; d.blocked = false; }
         else if (b.action === 'block') { d.blocked = true; d.epoch++; }
         else if (b.action === 'unblock') d.blocked = false;
@@ -578,12 +620,15 @@ async function handle(req, res) {
       // The password is optional: teachers usually enter with their personal QR link.
       const b = await readBody(req, 5000), name = clean(b.name, 120), login = validLogin(b.login), pass = clean(b.password, 200) || crypto.randomBytes(12).toString('base64url');
       if (name.length < 3) err('name_required'); if (pass.length < 6) err('password_too_short');
+      const slot = b.slot === undefined || b.slot === null || b.slot === '' ? null : Number(b.slot);
+      if (slot !== null && !slotOk(slot)) err('team_count');
+      if (slot !== null && await slotTaken(slot)) err('team_taken', 409);
       return send(res, 200, await store.tx(async t => {
         const c = await t.get('config'), tid = c.nextTeacherId++;
         if (!(await t.insert('login:' + login, { id: tid }))) err('login_taken', 409);
         const classCode = await uniqueClassCode(t);
         await t.set('class:' + classCode, { code: classCode, id: tid });
-        const doc = { id: tid, name, login, passHash: hash(pass), epoch: 1, createdAt: now(), lastLoginAt: null, blocked: false, classCode, round: 1, phase: 'setup', quiz: null, attempts: [], teams: makeTeams(7), nextMemberId: 1, history: [] };
+        const doc = { id: tid, name, login, passHash: hash(pass), epoch: 1, createdAt: now(), lastLoginAt: null, blocked: false, classCode, round: 1, phase: 'setup', quiz: null, attempts: [], slot, teams: slot ? [makeTeam(slot)] : [], nextMemberId: 1, history: [] };
         await ensureLink(t, doc);
         await t.set('teacher:' + tid, doc);
         await t.set('config', c);
@@ -642,7 +687,7 @@ async function handle(req, res) {
     const ref = await store.get('class:' + classInfo[1]), t = ref?.id ? await store.get('teacher:' + ref.id) : null;
     if (!t || t.blocked) err('class_not_found', 404);
     const visible = t.phase !== 'setup';
-    return send(res, 200, { code: t.classCode, tid: t.id, teacher: t.name, phase: t.phase, teams: visible ? t.teams.map(x => ({ id: x.id, name: x.name })) : [], leaderboard: visible ? leaderboard(t) : [] });
+    return send(res, 200, { code: t.classCode, tid: t.id, teacher: t.name, phase: t.phase, teams: visible ? t.teams.map(x => ({ id: x.id, name: x.name })) : [], leaderboard: visible ? await boardFor(t) : [] });
   }
   if (method === 'POST' && p === '/api/student/join') {
     limit(req, 'join', 200);
@@ -673,7 +718,7 @@ async function handle(req, res) {
   if (method === 'GET' && p === '/api/student') {
     const tok = readToken(req), t = tok?.role === 'student' ? await store.get('teacher:' + tok.tid) : null, me = studentOf(tok, t);
     if (!me) err('session_expired', 401);
-    return send(res, 200, { phase: t.phase, teacher: t.name, classCode: t.classCode, tid: t.id, team: { id: me.team.id, name: me.team.name, officialId: me.team.officialId, case: caseContent(me.team), custom: !!me.team.custom, submission: me.team.submission, members: me.team.members }, me: me.m, instructions: OFFICIAL.instructions, leaderboard: leaderboard(t) });
+    return send(res, 200, { phase: t.phase, teacher: t.name, classCode: t.classCode, tid: t.id, team: { id: me.team.id, name: me.team.name, officialId: me.team.officialId, case: caseContent(me.team), custom: !!me.team.custom, submission: me.team.submission, members: me.team.members }, me: me.m, instructions: OFFICIAL.instructions, leaderboard: await boardFor(t) });
   }
   if (method === 'POST' && p === '/api/student/submit') {
     const b = await readBody(req), tok = readToken(req);
