@@ -49,9 +49,9 @@ async function buildReport({ teams, ranking, round }) {
 
   // ---- sheet 1: results ----
   const ws = wb.addWorksheet('Нәтижелер · Результаты', { views: [{ state: 'frozen', ySplit: 5 }], pageSetup: { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, paperSize: 9 } });
-  ws.columns = [{ width: 8 }, { width: 32 }, { width: 10 }, { width: 8 }, { width: 10 }, { width: 26 }, { width: 18 }, { width: 18 }];
-  titleBlock(ws, 8, subtitle);
-  header(ws, 5, ['Орын\nМесто', 'Команда', 'Балл', 'Барлығы\nИз', '%', 'Деңгей / Уровень', 'Бастады\nНачали', 'Аяқтады\nЗавершили']);
+  ws.columns = [{ width: 8 }, { width: 26 }, { width: 38 }, { width: 28 }, { width: 10 }, { width: 8 }, { width: 9 }, { width: 24 }, { width: 17 }, { width: 17 }];
+  titleBlock(ws, 10, subtitle);
+  header(ws, 5, ['Орын\nМесто', 'Команда', 'Колледж', 'Жетекші\nРуководитель', 'Балл', 'Барлығы\nИз', '%', 'Деңгей / Уровень', 'Бастады\nНачали', 'Аяқтады\nЗавершили']);
   const bySlot = new Map(teams.map(t => [t.slot, t]));
   let place = 0;
   ranking.forEach((r, i) => {
@@ -59,21 +59,21 @@ async function buildReport({ teams, ranking, round }) {
     if (q) place++;
     const row = ws.getRow(rowNo);
     const medal = q && place <= 3 ? ['🥇 ', '🥈 ', '🥉 '][place - 1] : '';
-    row.values = [q ? `${medal}${place}` : '—', t.name, q ? q.score : (t.enteredAt ? 'тапсыруда / проходят тест' : 'бастамады / не начали'), q ? q.total : '', q ? q.score / q.total : '', q ? `${LEVELS[q.level][1]} / ${LEVELS[q.level][0]}` : '', fmt(t.enteredAt), fmt(q?.finishedAt)];
-    if (!q) ws.mergeCells(rowNo, 3, rowNo, 5);
-    row.height = 24;
+    row.values = [q ? `${medal}${place}` : '—', t.name, t.college || '', t.leader || '', q ? q.score : (t.enteredAt ? 'тапсыруда / проходят тест' : 'бастамады / не начали'), q ? q.total : '', q ? q.score / q.total : '', q ? `${LEVELS[q.level][1]} / ${LEVELS[q.level][0]}` : '', fmt(t.enteredAt), fmt(q?.finishedAt)];
+    if (!q) ws.mergeCells(rowNo, 5, rowNo, 7);
+    row.height = 34;
     row.eachCell({ includeEmpty: true }, (c, col) => {
       c.border = box;
-      c.alignment = { vertical: 'middle', horizontal: col === 2 || col === 6 ? 'left' : 'center', wrapText: true };
-      c.font = { size: 11, bold: col <= 3, color: { argb: q ? 'FF1D1B45' : GREY } };
+      c.alignment = { vertical: 'middle', horizontal: [2, 3, 4, 8].includes(col) ? 'left' : 'center', wrapText: true };
+      c.font = { size: col === 3 || col === 4 ? 10 : 11, bold: col <= 2 || col === 5, color: { argb: q ? 'FF1D1B45' : GREY } };
       const fill = q && place <= 3 ? MEDAL[place - 1] : i % 2 ? VIOLET_LIGHT : 'FFFFFFFF';
       c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: fill } };
     });
-    if (q) ws.getCell(rowNo, 5).numFmt = '0%';
+    if (q) ws.getCell(rowNo, 7).numFmt = '0%';
   });
   const end = 6 + ranking.length;
   const done = teams.filter(t => t.quiz);
-  ws.mergeCells(end + 1, 1, end + 1, 8);
+  ws.mergeCells(end + 1, 1, end + 1, 10);
   const sum = ws.getCell(end + 1, 1);
   sum.value = done.length
     ? `Тест тапсырды / Прошли тест: ${done.length} из ${teams.length} · Орташа нәтиже / Средний результат: ${Math.round(done.reduce((a, t) => a + t.quiz.score / t.quiz.total, 0) / done.length * 100)}%`
@@ -86,12 +86,12 @@ async function buildReport({ teams, ranking, round }) {
   const qs = done[0]?.quiz.questions || [];
   const wa = wb.addWorksheet('Жауаптар · Ответы', { views: [{ state: 'frozen', xSplit: 2, ySplit: 5 }], pageSetup: { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, paperSize: 9 } });
   const n = Math.max(qs.length, ...done.map(t => t.quiz.total), 1);
-  wa.columns = [{ width: 6 }, { width: 30 }, ...Array.from({ length: n }, () => ({ width: 5 })), { width: 9 }];
+  wa.columns = [{ width: 6 }, { width: 40 }, ...Array.from({ length: n }, () => ({ width: 5 })), { width: 9 }];
   titleBlock(wa, n + 3, 'Әр сұрақ бойынша жауаптар / Ответы по каждому вопросу: ✓ — дұрыс / верно, ✗ — қате / неверно');
   header(wa, 5, ['№', 'Команда', ...Array.from({ length: n }, (_, i) => String(i + 1)), 'Балл']);
   teams.forEach((t, i) => {
     const q = t.quiz, rowNo = 6 + i, row = wa.getRow(rowNo);
-    row.getCell(1).value = t.slot; row.getCell(2).value = t.name;
+    row.getCell(1).value = t.slot; row.getCell(2).value = t.college ? `${t.name}\n${t.college}` : t.name;
     for (let k = 0; k < n; k++) {
       const c = row.getCell(3 + k);
       if (q && k < q.total) {
@@ -102,8 +102,8 @@ async function buildReport({ teams, ranking, round }) {
       }
     }
     row.getCell(n + 3).value = q ? `${q.score}/${q.total}` : '—';
-    row.height = 22;
-    row.eachCell({ includeEmpty: true }, (c, col) => { c.border = box; c.alignment = { horizontal: col === 2 ? 'left' : 'center', vertical: 'middle' }; if (col <= 2 || col === n + 3) c.font = { bold: col !== 1, color: { argb: 'FF1D1B45' } }; });
+    row.height = t.college ? 34 : 22;
+    row.eachCell({ includeEmpty: true }, (c, col) => { c.border = box; c.alignment = { horizontal: col === 2 ? 'left' : 'center', vertical: 'middle', wrapText: col === 2 }; if (col <= 2 || col === n + 3) c.font = { bold: col !== 1, color: { argb: 'FF1D1B45' } }; });
   });
   if (qs.length) {
     const start = 8 + teams.length;

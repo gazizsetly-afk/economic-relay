@@ -21,6 +21,17 @@ if (PROD && (SECRET.length < 24 || !ADMIN_PASSWORD)) {
 
 const QUESTIONS = require('./teacher-test.json');
 const TEAM_NAMES = ['Агенты роста', 'Қаржы қырандары', 'Cash Flow (денежный поток)', 'Тапқыр', 'TABYSVIBE', 'Индекс удачи', 'Золотой капитал'];
+// College and team leader for each team (from the organisers' team list).
+const TEAM_INFO = [
+  { college: 'КГУ «Технический колледж города Алтай» УО ВКО', leader: 'Вельможина Анастасия Николаевна' },
+  { college: 'Жоғары техникалық гуманитарлық колледжі', leader: 'Шаяхметова Куралай Амангельдиновна' },
+  { college: 'КГУ «Самарский аграрно-технический колледж»', leader: 'Мухтарова Айжан Ескендыровна' },
+  { college: 'НАО «Восточно-Казахстанский университет имени Сарсена Аманжолова», Высший колледж', leader: 'Жасарова Риза' },
+  { college: 'КГУ «Усть-Каменогорский строительно-технический колледж»', leader: 'Зубкова Юлия Валерьевна' },
+  { college: 'ЧУ «Высший колледж имени Кумаша Нургалиева»', leader: 'Бердус Варвара Леонидовна' },
+  { college: 'КГУ «Глубоковский технический колледж» УО ВКО', leader: 'Гаврилов Игорь Николаевич' },
+];
+const infoOf = slot => TEAM_INFO[slot - 1] || { college: '', leader: '' };
 
 // ---------- helpers ----------
 function err(code, status = 400) { const e = new Error(code); e.status = status; throw e; }
@@ -145,12 +156,12 @@ async function legacyPayload() {
 }
 async function allTeams(cfg) {
   const docs = new Map((await store.list('team:')).map(d => [d.slot, d]));
-  return teamNames(cfg).map((name, i) => ({ ...(docs.get(i + 1) || blankTeam(i + 1)), name }));
+  return teamNames(cfg).map((name, i) => ({ ...(docs.get(i + 1) || blankTeam(i + 1)), name, ...infoOf(i + 1) }));
 }
 const quizSummary = q => (q ? { score: q.score, total: q.total, level: q.level, finishedAt: q.finishedAt } : null);
 // Ranking by the teacher test: higher share of correct answers first, then the faster finish.
 function ranking(teams) {
-  return teams.map(t => ({ slot: t.slot, name: t.name, test: quizSummary(t.quiz) }))
+  return teams.map(t => ({ slot: t.slot, name: t.name, college: t.college, leader: t.leader, test: quizSummary(t.quiz) }))
     .sort((a, b) => (b.test ? b.test.score / b.test.total : -1) - (a.test ? a.test.score / a.test.total : -1) || String(a.test?.finishedAt || '~').localeCompare(String(b.test?.finishedAt || '~')) || a.slot - b.slot);
 }
 
@@ -187,7 +198,7 @@ async function teamOf(req, cfg) {
   if (tok?.role !== 'team' || tok.round !== cfg.round) return null;
   const names = teamNames(cfg); if (!(tok.slot >= 1 && tok.slot <= names.length)) return null;
   const doc = (await store.get('team:' + tok.slot)) || blankTeam(tok.slot);
-  return doc.epoch === tok.epoch ? { ...doc, name: names[tok.slot - 1] } : null;
+  return doc.epoch === tok.epoch ? { ...doc, name: names[tok.slot - 1], ...infoOf(tok.slot) } : null;
 }
 
 // ---------- http ----------
@@ -236,7 +247,7 @@ async function handle(req, res) {
   // ----- public: who am I, and which teams have finished the test -----
   if (method === 'GET' && p === '/api/session') {
     const cfg = await store.get('config'), tok = readToken(req);
-    const teams = (await allTeams(cfg)).map(t => ({ slot: t.slot, name: t.name, done: !!t.quiz }));
+    const teams = (await allTeams(cfg)).map(t => ({ slot: t.slot, name: t.name, college: t.college, leader: t.leader, done: !!t.quiz }));
     if (juryOk(tok, cfg)) return send(res, 200, { role: 'jury', teams });
     const me = await teamOf(req, cfg);
     return send(res, 200, { role: me ? 'team' : null, slot: me?.slot ?? null, teams });
@@ -259,7 +270,7 @@ async function handle(req, res) {
     const cfg = await store.get('config'), me = await teamOf(req, cfg);
     if (!me) err('session_expired', 401);
     const qs = me.quiz ? (me.quiz.questions || QUESTIONS) : testOf(cfg).map(q => ({ id: q.id, ru: q.ru, kk: q.kk, options_ru: q.options_ru, options_kk: q.options_kk }));
-    return send(res, 200, { slot: me.slot, name: me.name, round: cfg.round, quiz: me.quiz ? { ...me.quiz, questions: undefined } : null, questions: qs });
+    return send(res, 200, { slot: me.slot, name: me.name, college: me.college, leader: me.leader, round: cfg.round, quiz: me.quiz ? { ...me.quiz, questions: undefined } : null, questions: qs });
   }
   if (method === 'POST' && p === '/api/team/quiz') {
     const b = await readBody(req, 20000), tok = readToken(req);
@@ -300,7 +311,7 @@ async function handle(req, res) {
       const teams = await allTeams(cfg);
       return send(res, 200, {
         owner, actor, round: cfg.round,
-        teams: teams.map(t => ({ slot: t.slot, name: t.name, entered: !!t.enteredAt, enteredAt: t.enteredAt, quiz: t.quiz ? { ...t.quiz } : null })),
+        teams: teams.map(t => ({ slot: t.slot, name: t.name, college: t.college, leader: t.leader, entered: !!t.enteredAt, enteredAt: t.enteredAt, quiz: t.quiz ? { ...t.quiz } : null })),
         ranking: ranking(teams), history: cfg.history || [],
         juries: owner ? Object.values(cfg.directors || {}).map(d => ({ login: d.login, name: d.name, createdAt: d.createdAt, lastLoginAt: d.lastLoginAt || null })) : null,
         legacyAttempts: cfg.legacyAttempts || [], hasLegacy: !!cfg.hasLegacy, storage: pool ? 'postgres' : 'local',
@@ -324,7 +335,7 @@ async function handle(req, res) {
       const teams = await allTeams(cfg);
       return send(res, 200, await store.tx(async t => {
         const c = await t.get('config');
-        c.history = [{ round: c.round, finishedAt: now(), teams: teams.map(x => ({ slot: x.slot, name: x.name, test: quizSummary(x.quiz) })) }, ...(c.history || [])].slice(0, 30);
+        c.history = [{ round: c.round, finishedAt: now(), teams: teams.map(x => ({ slot: x.slot, name: x.name, college: x.college, leader: x.leader, test: quizSummary(x.quiz) })) }, ...(c.history || [])].slice(0, 30);
         c.round++;
         for (const x of teams) await t.set('team:' + x.slot, { ...blankTeam(x.slot), epoch: (x.epoch || 1) + 1 });
         await t.set('config', c);

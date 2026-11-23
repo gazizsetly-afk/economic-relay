@@ -37,6 +37,7 @@ test('pages and background image are served', async t => {
   assert.equal((await call('x', '/server.js')).status, 404);
   const s = (await call('x', '/api/session')).data;
   assert.equal(s.role, null); assert.deepEqual(s.teams.map(x => x.name), NAMES); assert.ok(s.teams.every(x => !x.done));
+  assert.equal(s.teams[0].college, 'КГУ «Технический колледж города Алтай» УО ВКО'); assert.equal(s.teams[6].leader, 'Гаврилов Игорь Николаевич');
 });
 
 test('a teacher picks the team without any login, takes the test once and sees the result', async t => {
@@ -45,7 +46,7 @@ test('a teacher picks the team without any login, takes the test once and sees t
   assert.equal((await call('t4', '/api/team/enter', 'POST', { slot: 8 })).data.error, 'team_required');
   assert.equal((await call('t4', '/api/team/enter', 'POST', { slot: 4 })).data.done, false);
   let me = (await call('t4', '/api/team')).data;
-  assert.equal(me.name, 'Тапқыр'); assert.equal(me.quiz, null); assert.equal(me.questions.length, 20);
+  assert.equal(me.name, 'Тапқыр'); assert.equal(me.leader, 'Жасарова Риза'); assert.equal(me.quiz, null); assert.equal(me.questions.length, 20);
   assert.ok(me.questions.every(q => q.correct === undefined), 'answers hidden before finishing');
   assert.equal((await call('t4', '/api/team/quiz', 'POST', { answers: Array(19).fill(0) })).data.error, 'answer_all');
   const r = await call('t4', '/api/team/quiz', 'POST', { answers: correct });
@@ -164,7 +165,8 @@ test('Excel report: championship title, ranking and answers sheets', async t => 
   const ws = wb.worksheets[0];
   assert.match(ws.getCell('A1').value, /Экономикалық альянс: педагог және студенттер/);
   assert.match(ws.getCell('A2').value, /Областной чемпионат «Экономический альянс: педагог и студенты»/);
-  assert.equal(ws.getCell('B6').value, 'Cash Flow (денежный поток)'); assert.equal(ws.getCell('C6').value, 20);
+  assert.equal(ws.getCell('B6').value, 'Cash Flow (денежный поток)'); assert.equal(ws.getCell('E6').value, 20);
+  assert.equal(ws.getCell('C6').value, 'КГУ «Самарский аграрно-технический колледж»'); assert.equal(ws.getCell('D6').value, 'Мухтарова Айжан Ескендыровна');
   assert.equal(ws.getCell('B7').value, 'Агенты роста');
   assert.equal(wb.worksheets[1].getCell('C8').value, '✓', 'answers sheet: team 3, question 1');
 });

@@ -118,6 +118,8 @@ function render(force) {
   if (!same || force) { app.classList.remove('animate'); void app.offsetWidth; app.classList.add('animate'); }
   lastView = view;
 }
+// College and team leader, shown under the team name.
+const teamMeta = t => (t.college || t.leader) ? `<span class="team-meta">${t.college ? `<span>🏫 ${esc(t.college)}</span>` : ''}${t.leader ? `<span>👩‍🏫 ${esc(t.leader)}</span>` : ''}</span>` : '';
 const card = (title, body, cls = '') => `<section class="card reveal ${cls}">${title ? `<h2>${title}</h2>` : ''}${body}</section>`;
 const field = (label, id, attrs = '', hint = '') => `<label class="field"><span>${label}</span><input class="input" id="${id}" ${attrs}>${hint ? `<small>${hint}</small>` : ''}</label>`;
 const pill = (text, cls = '') => `<span class="pill ${cls}">${text}</span>`;
@@ -132,19 +134,19 @@ function landingUI() {
     <p>${L('heroText')}</p>
   </section>
   <section class="card reveal pick-card"><h2>👩‍🏫 ${L('pickTitle')}</h2><p class="muted">${L('pickText')}</p>
-    <div class="team-choose">${session.teams.map((t, i) => `<button type="button" class="${t.done ? 'is-done' : ''}" style="--d:${i * 60}ms" onclick="enterTeam(${t.slot})"><span class="team-no">${t.slot}</span><span class="grow">${esc(t.name)}<small>${t.done ? '✓ ' + L('done') : L('start') + ' →'}</small></span></button>`).join('')}</div>
+    <div class="team-choose">${session.teams.map((t, i) => `<button type="button" class="${t.done ? 'is-done' : ''}" style="--d:${i * 60}ms" onclick="enterTeam(${t.slot})"><span class="team-no">${t.slot}</span><span class="grow">${esc(t.name)}${teamMeta(t)}<small>${t.done ? '✓ ' + L('done') : L('start') + ' →'}</small></span></button>`).join('')}</div>
   </section>`;
 }
 async function enterTeam(slot) {
   const t = session.teams.find(x => x.slot === slot);
-  if (!t.done && !confirm(L('enterConfirm').replace('{name}', t.name))) return;
+  if (!t.done && !confirm(L('enterConfirm').replace('{name}', t.name) + (t.leader ? '\n👩‍🏫 ' + t.leader : '') + (t.college ? '\n🏫 ' + t.college : ''))) return;
   try { await api('/team/enter', 'POST', { slot }); await load(); window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) { toast(errText(e.message)); }
 }
 
 // ---------- teacher: test, then "access open" ----------
 function teamUI() {
   const d = data, qs = d.questions;
-  const head = `<div class="page-head reveal"><div><span class="muted small block">👩‍🏫 ${L('team')}</span><h1>🏳️ ${esc(d.name)}</h1></div></div>`;
+  const head = `<div class="page-head reveal"><div><span class="muted small block">👩‍🏫 ${L('team')}</span><h1>🏳️ ${esc(d.name)}</h1>${teamMeta(d)}</div></div>`;
   if (d.quiz) {
     return head + `<section class="card access-card reveal"><div class="access-icon">🔓</div><h2>${L('access')}</h2><p>${L('accessSub')}</p></section>
     ${card('', `<div class="result-head"><div><h2>🎉 ${L('testResult')}</h2><p class="muted">${fmtDate(d.quiz.finishedAt)}</p></div><div class="score-ring" style="--p:${d.quiz.score / d.quiz.total * 100}"><b>${d.quiz.score}</b><small>/${d.quiz.total}</small></div></div>
@@ -202,7 +204,7 @@ function juryUI() {
   ${tab === 'settings' ? settingsUI() : tab === 'access' ? accessUI() : juryTeamsUI()}`;
 }
 function rankingCard(list) {
-  const rows = list.map((t, i) => `<div class="rank-row ${t.test && i < 3 ? 'top' + (i + 1) : ''}"><span class="rank-pos">${t.test ? (['🥇', '🥈', '🥉'][i] || i + 1) : '·'}</span><span class="rank-name">${esc(t.name)}<small>${t.test ? L('lv_' + t.test.level) + ' · ' + fmtDate(t.test.finishedAt) : L('notStarted')}</small></span><b>${t.test ? t.test.score : '—'}<small>/${t.test ? t.test.total : 20}</small></b></div>`).join('');
+  const rows = list.map((t, i) => `<div class="rank-row ${t.test && i < 3 ? 'top' + (i + 1) : ''}"><span class="rank-pos">${t.test ? (['🥇', '🥈', '🥉'][i] || i + 1) : '·'}</span><span class="rank-name">${esc(t.name)}${teamMeta(t)}<small>${t.test ? L('lv_' + t.test.level) + ' · ' + fmtDate(t.test.finishedAt) : L('notStarted')}</small></span><b>${t.test ? t.test.score : '—'}<small>/${t.test ? t.test.total : 20}</small></b></div>`).join('');
   return card('🏆 ' + L('ranking'), (list.some(t => t.test) ? '' : `<p class="muted">${L('rankingEmpty')}</p>`) + rows, 'ranking');
 }
 function juryTeamsUI() {
@@ -217,7 +219,7 @@ function juryTeamsUI() {
 function teamCard(t) {
   const q = t.quiz;
   const status = q ? pill(`🧠 ${q.score}/${q.total}`, q.score / q.total >= 0.7 ? 'green' : 'amber') : t.entered ? pill('⏳ ' + L('inProgress'), 'amber') : pill(L('notStarted'), 'gray');
-  return `<details class="card review reveal" data-k="t${t.slot}"><summary><span class="team-no">${t.slot}</span><span class="grow">${esc(t.name)}<small>${q ? L('lv_' + q.level) + ' · ' + L('finishedAt') + ' ' + fmtDate(q.finishedAt) : t.entered ? L('startedAt') + ' ' + fmtDate(t.enteredAt) : ''}</small></span>${status}</summary>
+  return `<details class="card review reveal" data-k="t${t.slot}"><summary><span class="team-no">${t.slot}</span><span class="grow">${esc(t.name)}${teamMeta(t)}<small>${q ? L('lv_' + q.level) + ' · ' + L('finishedAt') + ' ' + fmtDate(q.finishedAt) : t.entered ? L('startedAt') + ' ' + fmtDate(t.enteredAt) : ''}</small></span>${status}</summary>
     ${q ? (q.questions || []).map((x, i) => { const ok = q.answers[i] === x.correct; return `<p class="small">${ok ? '✅' : '❌'} ${i + 1}. ${esc(x[lang])}${ok ? '' : ` — <span class="muted">${LETTERS[q.answers[i]]} → ${LETTERS[x.correct]}</span>`}</p>`; }).join('') : `<p class="muted">${t.entered ? L('inProgress') : L('notStarted')}</p>`}
     ${q && data.owner ? `<div class="btn-row"><button class="btn soft-red small" onclick="resetTest(${t.slot})">↺ ${L('resetTest')}</button></div>` : ''}
   </details>`;
@@ -229,7 +231,7 @@ function settingsUI() {
   return `<div class="split">
     ${card('↻ ' + L('newRound'), `<p class="muted">${L('newRoundText')}</p><button class="btn soft-red" onclick="newRound()">${L('newRound')}</button>`)}
     ${card('📊 ' + L('export'), `<a class="btn ghost" href="/api/jury/xlsx" download>📊 ${L('downloadCsv')}</a>${d.hasLegacy ? `<h3 class="mt">${L('legacyTitle')}</h3><a class="btn ghost small" href="/api/jury/legacy-export" download>↓ ${L('legacyDownload')}</a>` : ''}`)}
-    ${card('🗂 ' + L('history'), d.history.length ? d.history.map(h => `<details class="qa"><summary>${L('round')} ${h.round} · ${fmtDate(h.finishedAt)}</summary>${h.teams.map(t => `<p>${esc(t.name)}: 🧠 <b>${t.test ? t.test.score + '/' + t.test.total : '—'}</b></p>`).join('')}</details>`).join('') : `<p class="muted">${L('historyEmpty')}</p>`)}
+    ${card('🗂 ' + L('history'), d.history.length ? d.history.map(h => `<details class="qa"><summary>${L('round')} ${h.round} · ${fmtDate(h.finishedAt)}</summary>${h.teams.map(t => `<p>${esc(t.name)}${t.college ? ` <span class="muted small">(${esc(t.college)})</span>` : ''}: 🧠 <b>${t.test ? t.test.score + '/' + t.test.total : '—'}</b></p>`).join('')}</details>`).join('') : `<p class="muted">${L('historyEmpty')}</p>`)}
   </div>`;
 }
 async function newRound() { if (!confirm(L('newRoundConfirm'))) return; await act('/jury/new-round', { confirm: 'NEW ROUND' }); }

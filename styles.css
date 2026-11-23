@@ -340,3 +340,11 @@ textarea.input{resize:vertical;line-height:1.55}
 .champ-main{background:linear-gradient(90deg,#fff 0%,#c8bcff 40%,#8fe8ff 80%);-webkit-background-clip:text;background-clip:text;color:transparent;background-size:200% 100%;animation:shine 6s ease-in-out infinite alternate;filter:drop-shadow(0 3px 16px #120c4acc)}
 .champ-post{font-size:.48em;letter-spacing:.02em;font-weight:700;color:#e2dcff;text-transform:uppercase;margin:.25em 0}
 .champ-alt{font-size:clamp(15px,2vw,19px)!important;font-weight:700;color:#fff!important;opacity:.92;border-left:3px solid #8fe8ff;padding-left:14px;margin-top:4px!important;max-width:640px}
+
+/* college and team leader under the team name */
+.team-meta{display:block;font-size:12.5px;font-weight:600;color:var(--muted);line-height:1.45;margin-top:3px}
+.team-meta span{display:block}
+.page-head .team-meta{font-size:14px;color:#ffffffd9;margin-top:6px}
+.team-choose button{align-items:flex-start}
+.team-choose .team-no{margin-top:2px}
+.review>summary .team-meta{font-size:12px}
