@@ -352,6 +352,11 @@ async function handle(req, res) {
         return { ok: true };
       }));
     }
+    if (method === 'GET' && p === '/api/jury/xlsx') {
+      const teams = await allTeams(cfg), buf = await require('./excel').buildReport({ teams, ranking: ranking(teams), round: cfg.round });
+      res.writeHead(200, { 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Content-Disposition': `attachment; filename="economic-alliance-round-${cfg.round}.xlsx"`, 'Content-Length': buf.length, 'Cache-Control': 'no-store' });
+      return res.end(Buffer.from(buf));
+    }
     if (method === 'GET' && p === '/api/jury/csv') {
       const teams = await allTeams(cfg), rank = ranking(teams);
       return csv(res, `test-results-round-${cfg.round}.csv`, [

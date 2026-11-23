@@ -1,14 +1,15 @@
-# Экономикалық эстафета / Экономическая эстафета — v6
+# «Экономикалық альянс: педагог және студенттер» облыстық чемпионаты
+# Областной чемпионат «Экономический альянс: педагог и студенты» — v6
 
-A bilingual (Kazakh / Russian) site for a college economics competition.
+A bilingual (Kazakh / Russian) site for the regional economics championship.
 
 ## How it works
 
 | Who | How they enter | What they do |
 |---|---|---|
 | **Teacher** | Opens the site and taps **their team** (no registration, no password) | Takes the 20-question test once. Afterwards the page shows the score and **«Доступ к практическому кейсу открыт» / «Практикалық кейске қолжетімділік ашық»**. The case itself is handed out on paper. |
-| **Jury** | `/jury` page (the old `/director` link still works), login + password | **Observes only**: every team's status (not started / taking the test / finished), score, level and answers, ranking by test score. Nothing can be changed from a jury login. |
-| **Main administrator** | `/jury` with login `admin` and the Render `TEACHER_PASSWORD` | What the jury sees, plus: reset one team's test, new round, CSV export, round history, and jury logins (tab «Доступ жюри»). |
+| **Jury** | `/jury` page (the old `/director` link still works), login + password | **Observes only**: every team's status (not started / taking the test / finished), score, level and answers, ranking by test score, Excel report download. Nothing can be changed from a jury login. |
+| **Main administrator** | `/jury` with login `admin` and the Render `TEACHER_PASSWORD` | What the jury sees, plus: reset one team's test, new round, round history, and jury logins (tab «Доступ жюри»). |
 
 Teams: Агенты роста, Қаржы қырандары, Cash Flow (денежный поток), Тапқыр, TABYSVIBE, Индекс удачи, Золотой капитал.
 
@@ -19,6 +20,7 @@ Pages update live (Server-Sent Events): the jury sees a test finish the moment i
 | File | Purpose |
 |---|---|
 | `server.js` | Node 22 HTTP API and storage |
+| `excel.js` | Styled Excel report for the jury (`/api/jury/xlsx`): championship title in KK and RU, ranking with medals, per-question answers sheet |
 | `index.html`, `styles.css`, `app.js` | Responsive bilingual UI with the animated campus background (`images/campus.webp`) |
 | `teacher-test.json` | The 20 bilingual test questions and answer key |
 | `official-team-assignments.json` | Case texts (reference only; cases are handed out on paper) |

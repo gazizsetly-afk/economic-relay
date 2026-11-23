@@ -1,8 +1,8 @@
 {
   "name": "economic-relay",
-  "version": "6.0.0",
+  "version": "6.1.0",
   "private": true,
-  "description": "Bilingual (KK/RU) economics relay: teachers pick their team and take the test, the jury grades every team on a 50-point rubric",
+  "description": "Regional championship «Economic alliance: teacher and students» (KK/RU): teachers pick their team and take the test, the jury observes; styled Excel report",
   "scripts": {
     "start": "node server.js",
     "check": "node --check server.js",
@@ -12,6 +12,7 @@
     "node": ">=22.16.0 <23"
   },
   "dependencies": {
+    "exceljs": "^4.4.0",
     "pg": "^8.16.3"
   }
 }

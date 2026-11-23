@@ -1,11 +1,11 @@
 'use strict';
 // Economic Relay v6: teachers pick their team and take the test; the jury watches the results.
 const S = {
-  brandSmall: ['ЭКОНОМИЧЕСКАЯ', 'ЭКОНОМИКАЛЫҚ'], brandBig: ['ЭСТАФЕТА', 'ЭСТАФЕТА'],
-  footer: ['✦ Экономикалық эстафета · Экономическая эстафета', '✦ Экономикалық эстафета · Экономическая эстафета'],
+  brandSmall: ['ЭКОНОМИЧЕСКИЙ', 'ЭКОНОМИКАЛЫҚ'], brandBig: ['АЛЬЯНС', 'АЛЬЯНС'],
+  footer: ['✦ «Экономикалық альянс: педагог және студенттер» · «Экономический альянс: педагог и студенты»', '✦ «Экономикалық альянс: педагог және студенттер» · «Экономический альянс: педагог и студенты»'],
   juryLink: ['Вход для жюри', 'Қазылар алқасына кіру'], logout: ['Выйти', 'Шығу'],
-  heroKicker: ['✦ КОМАНДНАЯ ИГРА ПО ЭКОНОМИКЕ', '✦ ЭКОНОМИКА БОЙЫНША КОМАНДАЛЫҚ ОЙЫН'],
-  heroTitle: ['Вместе думаем.<br><span>Вместе побеждаем.</span>', 'Бірге ойлаймыз.<br><span>Бірге жеңеміз.</span>'],
+  heroKicker: ['🏆 ОБЛЫСТЫҚ ЧЕМПИОНАТ · ОБЛАСТНОЙ ЧЕМПИОНАТ', '🏆 ОБЛЫСТЫҚ ЧЕМПИОНАТ · ОБЛАСТНОЙ ЧЕМПИОНАТ'],
+  champKk: ['«Экономикалық альянс: педагог және студенттер» облыстық чемпионаты', '«Экономикалық альянс: педагог және студенттер» облыстық чемпионаты'], champRu: ['Областной чемпионат «Экономический альянс: педагог и студенты»', 'Областной чемпионат «Экономический альянс: педагог и студенты»'],
   heroText: ['Преподаватель выбирает свою команду и проходит тест. После теста открывается доступ к практическому кейсу.', 'Мұғалім өз командасын таңдап, тест тапсырады. Тесттен кейін практикалық кейске қолжетімділік ашылады.'],
   pickTitle: ['Выберите свою команду', 'Командаңызды таңдаңыз'], pickText: ['Нажмите на свою команду — тест начнётся сразу. Регистрация и пароль не нужны.', 'Өз командаңызды басыңыз — тест бірден басталады. Тіркелу мен құпиясөз қажет емес.'],
   done: ['тест пройден', 'тест тапсырылды'], start: ['начать', 'бастау'], enterConfirm: ['Вы преподаватель команды «{name}»? Тест начнётся сразу.', '«{name}» командасының мұғалімісіз бе? Тест бірден басталады.'],
@@ -28,7 +28,7 @@ const S = {
   ranking: ['Рейтинг по тесту', 'Тест бойынша рейтинг'], rankingEmpty: ['Рейтинг появится, когда команды пройдут тест.', 'Командалар тест тапсырғанда рейтинг шығады.'],
   resetTest: ['Сбросить тест', 'Тестті қайтадан'], resetTestConfirm: ['Сбросить тест этой команды? Его можно будет пройти заново.', 'Осы команданың тестін қайтару керек пе? Оны қайта тапсыруға болады.'],
   newRound: ['Новый тур', 'Жаңа тур'], newRoundText: ['Результаты текущего тура сохранятся в истории, тесты всех команд очистятся.', 'Ағымдағы тур нәтижелері тарихқа сақталады, барлық команданың тесті тазартылады.'], newRoundConfirm: ['Начать новый тур? Тесты всех команд будут очищены.', 'Жаңа тур бастау керек пе? Барлық команданың тесті тазартылады.'],
-  history: ['История туров', 'Турлар тарихы'], historyEmpty: ['Завершённых туров пока нет.', 'Аяқталған тур әзірге жоқ.'], downloadCsv: ['Скачать Excel / CSV', 'Excel / CSV жүктеу'], export: ['Экспорт результатов', 'Нәтижелерді жүктеу'],
+  history: ['История туров', 'Турлар тарихы'], historyEmpty: ['Завершённых туров пока нет.', 'Аяқталған тур әзірге жоқ.'], downloadCsv: ['Скачать Excel', 'Excel жүктеу'], export: ['Экспорт результатов', 'Нәтижелерді жүктеу'],
   legacyTitle: ['Данные прошлой версии сайта', 'Сайттың алдыңғы нұсқасының деректері'], legacyDownload: ['Скачать резервную копию', 'Резервтік көшірмені жүктеу'],
   accessTitle: ['Логины для жюри', 'Қазыларға арналған логиндер'], accessHelp: ['Создайте логин и пароль для каждого члена жюри — они только наблюдают. Вход на странице:', 'Әр қазыға логин мен құпиясөз жасаңыз — олар тек бақылайды. Кіру беті:'], fullName: ['ФИО', 'Аты-жөні'],
   loginHint: ['латиница, цифры, . _ - @ (3–40 символов)', 'латын әріптері, сандар, . _ - @ (3–40 таңба)'], passHint8: ['не короче 8 символов', 'кемі 8 таңба'], createJury: ['Создать доступ', 'Қолжетімділік жасау'], noJuries: ['Пока нет ни одного логина.', 'Әзірге логин жоқ.'],
@@ -126,7 +126,9 @@ const pill = (text, cls = '') => `<span class="pill ${cls}">${text}</span>`;
 function landingUI() {
   return `<section class="hero reveal">
     <span class="kicker">${L('heroKicker')}</span>
-    <h1>${L('heroTitle')}</h1>
+    ${lang === 'kk'
+      ? `<h1 class="champ"><span class="champ-pre">«Экономикалық альянс:</span> <span class="champ-main">педагог және студенттер»</span> <span class="champ-post">облыстық чемпионаты</span></h1><p class="champ-alt">Областной чемпионат «Экономический альянс: педагог и студенты»</p>`
+      : `<h1 class="champ"><span class="champ-post">Областной чемпионат</span> <span class="champ-pre">«Экономический альянс:</span> <span class="champ-main">педагог и студенты»</span></h1><p class="champ-alt">«Экономикалық альянс: педагог және студенттер» облыстық чемпионаты</p>`}
     <p>${L('heroText')}</p>
   </section>
   <section class="card reveal pick-card"><h2>👩‍🏫 ${L('pickTitle')}</h2><p class="muted">${L('pickText')}</p>
@@ -209,7 +211,7 @@ function juryTeamsUI() {
   return `<div class="tiles reveal"><div class="tile"><b>${d.teams.length}</b><span>${L('tTeams')}</span></div><div class="tile"><b>${done.length}</b><span>${L('tDone')}</span></div><div class="tile"><b>${avg}</b><span>${L('tAvg')}</span></div><div class="tile"><b>${progress.length}</b><span>${L('tProgress')}</span></div></div>
   <div class="split wide">
     <div>${d.teams.map(teamCard).join('')}</div>
-    <div>${rankingCard(d.ranking)}${card('', `<a class="btn ghost small" href="/api/jury/csv" download>↓ ${L('downloadCsv')}</a>`)}</div>
+    <div>${rankingCard(d.ranking)}${card('', `<a class="btn ghost small" href="/api/jury/xlsx" download>📊 ${L('downloadCsv')}</a>`)}</div>
   </div>`;
 }
 function teamCard(t) {
@@ -226,7 +228,7 @@ function settingsUI() {
   const d = data;
   return `<div class="split">
     ${card('↻ ' + L('newRound'), `<p class="muted">${L('newRoundText')}</p><button class="btn soft-red" onclick="newRound()">${L('newRound')}</button>`)}
-    ${card('📊 ' + L('export'), `<a class="btn ghost" href="/api/jury/csv" download>↓ ${L('downloadCsv')}</a>${d.hasLegacy ? `<h3 class="mt">${L('legacyTitle')}</h3><a class="btn ghost small" href="/api/jury/legacy-export" download>↓ ${L('legacyDownload')}</a>` : ''}`)}
+    ${card('📊 ' + L('export'), `<a class="btn ghost" href="/api/jury/xlsx" download>📊 ${L('downloadCsv')}</a>${d.hasLegacy ? `<h3 class="mt">${L('legacyTitle')}</h3><a class="btn ghost small" href="/api/jury/legacy-export" download>↓ ${L('legacyDownload')}</a>` : ''}`)}
     ${card('🗂 ' + L('history'), d.history.length ? d.history.map(h => `<details class="qa"><summary>${L('round')} ${h.round} · ${fmtDate(h.finishedAt)}</summary>${h.teams.map(t => `<p>${esc(t.name)}: 🧠 <b>${t.test ? t.test.score + '/' + t.test.total : '—'}</b></p>`).join('')}</details>`).join('') : `<p class="muted">${L('historyEmpty')}</p>`)}
   </div>`;
 }

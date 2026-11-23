@@ -145,3 +145,26 @@ test('open pages get a live event right after a change', async t => {
   await call('j', '/api/jury/new-round', 'POST', { confirm: 'NEW ROUND' });
   await waitFor('"config":true');
 });
+
+test('Excel report: championship title, ranking and answers sheets', async t => {
+  const ExcelJS = require('exceljs');
+  const { call, base } = await launch(t);
+  await call('t3', '/api/team/enter', 'POST', { slot: 3 });
+  await call('t3', '/api/team/quiz', 'POST', { answers: correct });
+  await call('t1', '/api/team/enter', 'POST', { slot: 1 });
+  await call('t1', '/api/team/quiz', 'POST', { answers: Array(20).fill(0) });
+  assert.equal((await call('x', '/api/jury/xlsx')).status, 401);
+  // download with the jury cookie (binary, so fetch directly)
+  const login = await fetch(base + '/api/jury/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ login: 'admin', password: SUP }) });
+  const cookie = login.headers.get('set-cookie').split(';')[0];
+  const file = await fetch(base + '/api/jury/xlsx', { headers: { cookie } });
+  assert.equal(file.status, 200);
+  assert.match(file.headers.get('content-type'), /spreadsheetml/);
+  const wb = new ExcelJS.Workbook(); await wb.xlsx.load(Buffer.from(await file.arrayBuffer()));
+  const ws = wb.worksheets[0];
+  assert.match(ws.getCell('A1').value, /Экономикалық альянс: педагог және студенттер/);
+  assert.match(ws.getCell('A2').value, /Областной чемпионат «Экономический альянс: педагог и студенты»/);
+  assert.equal(ws.getCell('B6').value, 'Cash Flow (денежный поток)'); assert.equal(ws.getCell('C6').value, 20);
+  assert.equal(ws.getCell('B7').value, 'Агенты роста');
+  assert.equal(wb.worksheets[1].getCell('C8').value, '✓', 'answers sheet: team 3, question 1');
+});
