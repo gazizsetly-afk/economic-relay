@@ -9,7 +9,7 @@ A bilingual (Kazakh / Russian) site for the regional economics championship.
 |---|---|---|
 | **Teacher** | Opens the site and taps **their team** (no registration, no password) | Takes the 20-question test once. Afterwards the page shows the score and **«Доступ к практическому кейсу открыт» / «Практикалық кейске қолжетімділік ашық»**. The case itself is handed out on paper. |
 | **Jury** | `/jury` page (the old `/director` link still works), login + password | **Observes only**: every team's status (not started / taking the test / finished), score, level and answers, ranking by test score, Excel report download. Nothing can be changed from a jury login. |
-| **Main administrator** | `/jury` with login `admin` and the Render `TEACHER_PASSWORD` | What the jury sees, plus: reset one team's test, new round, round history, and jury logins (tab «Доступ жюри»). |
+| **Main administrator** | `/jury` with login `admin` and the Render `TEACHER_PASSWORD` | What the jury sees, plus: reset one team's test, new round, round history (delete one round or all), and jury logins (tab «Доступ жюри»). |
 
 Teams: Агенты роста, Қаржы қырандары, Cash Flow (денежный поток), Тапқыр, TABYSVIBE, Индекс удачи, Золотой капитал. Each team is shown with its college and team leader (`TEAM_INFO` in `server.js`) on the home page, the test page, the jury page and in the Excel report.
 

@@ -329,6 +329,23 @@ async function handle(req, res) {
         return { ok: true };
       }));
     }
+    if (method === 'POST' && p === '/api/jury/history') {
+      if (!owner) err('owner_only', 403);
+      const b = await readBody(req, 2000);
+      return send(res, 200, await store.tx(async t => {
+        const c = await t.get('config'), list = c.history || [];
+        if (b.action === 'delete') {
+          const round = Number(b.round);
+          if (!list.some(h => h.round === round)) err('not_found', 404);
+          c.history = list.filter(h => h.round !== round);
+        } else if (b.action === 'clear') {
+          if (b.confirm !== 'CLEAR HISTORY') err('confirm_required');
+          c.history = [];
+        } else err('invalid_action');
+        await t.set('config', c);
+        return { ok: true, left: c.history.length };
+      }));
+    }
     if (method === 'POST' && p === '/api/jury/new-round') {
       if (!owner) err('owner_only', 403);
       const b = await readBody(req, 2000); if (b.confirm !== 'NEW ROUND') err('confirm_required');

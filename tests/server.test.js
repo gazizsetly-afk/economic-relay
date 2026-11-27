@@ -170,3 +170,20 @@ test('Excel report: championship title, ranking and answers sheets', async t => 
   assert.equal(ws.getCell('B7').value, 'Агенты роста');
   assert.equal(wb.worksheets[1].getCell('C8').value, '✓', 'answers sheet: team 3, question 1');
 });
+
+test('admin can delete one round or the whole history; jury cannot', async t => {
+  const { call } = await launch(t);
+  await call('own', '/api/jury/login', 'POST', { login: 'admin', password: SUP });
+  for (let i = 0; i < 3; i++) assert.equal((await call('own', '/api/jury/new-round', 'POST', { confirm: 'NEW ROUND' })).status, 200);
+  assert.deepEqual((await call('own', '/api/jury')).data.history.map(h => h.round), [3, 2, 1]);
+  await call('own', '/api/jury/accounts', 'POST', { action: 'create', name: 'Жюри Бір', login: 'jury1', password: 'Jury-pass-2026' });
+  await call('j', '/api/jury/login', 'POST', { login: 'jury1', password: 'Jury-pass-2026' });
+  assert.equal((await call('j', '/api/jury/history', 'POST', { action: 'delete', round: 2 })).data.error, 'owner_only');
+  assert.equal((await call('own', '/api/jury/history', 'POST', { action: 'delete', round: 9 })).status, 404);
+  assert.equal((await call('own', '/api/jury/history', 'POST', { action: 'delete', round: 2 })).data.left, 2);
+  assert.deepEqual((await call('own', '/api/jury')).data.history.map(h => h.round), [3, 1]);
+  assert.equal((await call('own', '/api/jury/history', 'POST', { action: 'clear' })).data.error, 'confirm_required');
+  assert.equal((await call('own', '/api/jury/history', 'POST', { action: 'clear', confirm: 'CLEAR HISTORY' })).status, 200);
+  const after = (await call('own', '/api/jury')).data;
+  assert.equal(after.history.length, 0); assert.equal(after.round, 4, 'the current round is not touched');
+});
